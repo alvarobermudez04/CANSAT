@@ -4,7 +4,11 @@ from PIL import Image, ImageTk
 class InterfazApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("GroundStation")
+        self.root.title("Interfaz con Tkinter y Pillow")
+
+        # Cargar las imágenes con Pillow
+        #self.img_a = self.load_image("imagen_a.png")
+        #self.img_b = self.load_image("imagen_b.png")
 
         # Pantalla Inicial
         self.pantalla_inicial()
@@ -24,29 +28,18 @@ class InterfazApp:
         self.root.geometry(f"{width}x{height}")
         self.root.configure(bg="blue")
 
-        # Crear un Frame rojo en el centro
-        frame_main = tk.Frame(self.root, bg="red")
-        frame_main.pack(pady=20)
+        # Crear un Frame azul en el centro
+        frame = tk.Frame(self.root, bg="red", width=300, height=200)
+        frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-        tk.Label(frame_main, text="Team #2075", font=("Helvetica", 16)).pack(pady=20)
+        tk.Label(frame, text="Pantalla Inicial", font=("Helvetica", 16)).pack(pady=20)
 
         # Botones e imágenes
-        tk.Button(frame_main, text="New Mission", command=self.pantalla_a).pack(pady=10)
-        tk.Button(frame_main, text="Go to simulation", command=self.pantalla_b).pack(pady=10)
+        tk.Button(frame, text="Ir a Pantalla A", command=self.pantalla_a).pack(pady=10)
+        #tk.Label(frame, image=self.img_a).pack()
 
-        frame_imagenes_main = tk.Frame(self.root)
-        frame_imagenes_main.pack(pady=10)
-
-
-        # Cargar las imágenes
-        self.gia_logo = ImageTk.PhotoImage(Image.open("GroundStation\gia logo.jpg").resize((200,200)))
-        self.cansat_logo = ImageTk.PhotoImage(Image.open("GroundStation\cansat_logo.png").resize((200,200)))
-        self.team_logo = ImageTk.PhotoImage(Image.open("GroundStation\\team logo.jpg").resize((200,200)))
-
-        #coloca las imagenes en el frame2
-        tk.Label(frame_imagenes_main, image=self.gia_logo).pack(side="left")
-        tk.Label(frame_imagenes_main, image=self.cansat_logo).pack(padx=10,side="left")
-        tk.Label(frame_imagenes_main, image=self.team_logo).pack()
+        tk.Button(frame, text="Ir a Pantalla B", command=self.pantalla_b).pack(pady=10)
+        #tk.Label(frame, image=self.img_b).pack()
 
     def pantalla_a(self):
         # Limpiar la pantalla actual
