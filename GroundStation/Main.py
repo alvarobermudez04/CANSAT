@@ -9,11 +9,6 @@ class InterfazApp:
         # Pantalla Inicial
         self.pantalla_inicial()
 
-    def load_image(self, path):
-        image = Image.open(path)
-        photo = ImageTk.PhotoImage(image)
-        return photo
-
     def pantalla_inicial(self):
         # Limpiar la pantalla actual
         self.clear_screen()
@@ -31,8 +26,8 @@ class InterfazApp:
         tk.Label(frame_main, text="Team #2075", font=("Helvetica", 16)).pack(pady=20)
 
         # Botones e imágenes
-        tk.Button(frame_main, text="New Mission", command=self.pantalla_a).pack(pady=10)
-        tk.Button(frame_main, text="Go to simulation", command=self.pantalla_b).pack(pady=10)
+        tk.Button(frame_main, text="New Mission", command=self.pantalla_mission).pack(pady=10)
+        tk.Button(frame_main, text="Go to simulation", command=self.pantalla_simulation).pack(pady=10)
 
         frame_imagenes_main = tk.Frame(self.root)
         frame_imagenes_main.pack(pady=10)
@@ -40,7 +35,7 @@ class InterfazApp:
 
         # Cargar las imágenes
         self.gia_logo = ImageTk.PhotoImage(Image.open("GroundStation\gia logo.jpg").resize((200,200)))
-        self.cansat_logo = ImageTk.PhotoImage(Image.open("GroundStation\cansat_logo.png").resize((200,200)))
+        self.cansat_logo = ImageTk.PhotoImage(Image.open("GroundStation\cansat logo.png").resize((200,200)))
         self.team_logo = ImageTk.PhotoImage(Image.open("GroundStation\\team logo.jpg").resize((200,200)))
 
         #coloca las imagenes en el frame2
@@ -48,7 +43,7 @@ class InterfazApp:
         tk.Label(frame_imagenes_main, image=self.cansat_logo).pack(padx=10,side="left")
         tk.Label(frame_imagenes_main, image=self.team_logo).pack()
 
-    def pantalla_a(self):
+    def pantalla_mission(self):
         # Limpiar la pantalla actual
         self.clear_screen()
 
@@ -57,12 +52,12 @@ class InterfazApp:
         height = self.root.winfo_screenheight()
         self.root.geometry(f"{width}x{height}")
 
-        tk.Label(self.root, text="Pantalla A", font=("Helvetica", 16)).pack(pady=20)
+        tk.Label(self.root, text="Mission", font=("Helvetica", 16)).pack(pady=20)
 
         # Botón de regresar
-        tk.Button(self.root, text="Regresar", command=self.pantalla_inicial).pack(pady=10)
+        tk.Button(self.root, text="Return", command=self.pantalla_inicial).pack(pady=10)
 
-    def pantalla_b(self):
+    def pantalla_simulation(self):
         # Limpiar la pantalla actual
         self.clear_screen()
 
@@ -71,10 +66,10 @@ class InterfazApp:
         height = self.root.winfo_screenheight()
         self.root.geometry(f"{width}x{height}")
 
-        tk.Label(self.root, text="Pantalla B", font=("Helvetica", 16)).pack(pady=20)
+        tk.Label(self.root, text="Simulation Mode", font=("Helvetica", 16)).pack(pady=20)
 
         # Botón de regresar
-        tk.Button(self.root, text="Regresar", command=self.pantalla_inicial).pack(pady=10)
+        tk.Button(self.root, text="Return", command=self.pantalla_inicial).pack(pady=10)
 
     def clear_screen(self):
         # Limpiar la pantalla
