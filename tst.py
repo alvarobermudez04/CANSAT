@@ -1,5 +1,6 @@
 from customtkinter import *     #pip install customtkinter
 from PIL import Image           #pip install PIL
+from datetime import datetime
 
 class InterfazApp:
     def __init__(self, root):
@@ -27,8 +28,8 @@ class InterfazApp:
         # Crear un Frame para el titulo y los botones en el centro
         background_frame = CTkFrame(self.root)
         background_frame.place(relwidth=1,relheight=1)
-        main_frame = CTkFrame(self.root, fg_color=self.color_frame,corner_radius=30)
-        main_frame.place(relx=0.55,relwidth=0.45,relheight=1)
+        main_frame = CTkFrame(self.root, fg_color=self.color_frame,corner_radius=0)
+        main_frame.place(relwidth=0.45,relheight=1)
         
         # Titulo
         CTkLabel(main_frame, text="Team #2075", font=("Helvetica", 16),text_color=self.color_texto_blanco).pack(pady=200)
@@ -98,46 +99,47 @@ class InterfazApp:
                  text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
 
         self.left_label         = CTkLabel(self.left_frame, 
-                                            text="UTC Time: "+ '\n'+
-                                                "Mission time: "        + '\n'+
-                                                "State"                 + '\n'+
-                                                "Sent packages: "       + '\n'+
-                                                "Recieved packages: "   + '\n'+  
-                                                "Last Command: ", 
-                                            justify=LEFT,
-                                            font=("Helvetica", 30),                                                   
-                                            text_color=self.color_texto_blanco)
+                                    text=
+                                        "UTC Time: "+ '\n'+
+                                        "Mission time: "        + '\n'+
+                                        "State"                 + '\n'+
+                                        "Sent packages: "       + '\n'+
+                                        "Recieved packages: "   + '\n'+  
+                                        "Last Command: ", 
+                                    justify=LEFT,
+                                    font=("Helvetica", 30),                                                   
+                                    text_color=self.color_texto_blanco)
     
-        
         self.satelites_label    = CTkLabel(self.bottom_frame, 
-                                            text="Satelites conected: "+ '\n'+
-                                                "GPS Time: "     ,
-                                            justify=LEFT,
-                                            font=("Helvetica", 30),
-                                            text_color=self.color_texto_negro)
+                                    text=
+                                        "Satelites conected: "+ '\n'+
+                                        "GPS Time: "     ,
+                                    justify=LEFT,
+                                    font=("Helvetica", 30),
+                                    text_color=self.color_texto_negro)
                                                    
-        self.white_top_label        = CTkLabel(self.white_top_frame, 
-                                            text=
-                                            "Speed: "       + '\n'+
-                                            "Temperature: " + '\n'+
-                                            "Pressure: "    + '\n'+
-                                            "Wind Speed: ", 
-                                            font=("Helvetica", 20),
-                                            text_color=self.color_texto_negro)
+        self.white_top_label    = CTkLabel(self.white_top_frame, 
+                                    text=
+                                        "Speed: "       + '\n'+
+                                        "Temperature: " + '\n'+
+                                        "Pressure: "    + '\n'+
+                                        "Wind Speed: ", 
+                                    font=("Helvetica", 20),
+                                    text_color=self.color_texto_negro)
         
-        self.white_bottom_label     = CTkLabel(self.white_bottom_frame, 
-                                            text=
-                                            "Altitude: "    + '\n'+
-                                            "Tilt: "        + '\n'+
-                                            "Roll: "        + '\n'+
-                                            "Voltage: ", 
-                                            font=("Helvetica", 20),
-                                            text_color=self.color_texto_negro)
+        self.white_bottom_label = CTkLabel(self.white_bottom_frame, 
+                                    text=
+                                        "Altitude: "    + '\n'+
+                                        "Tilt: "        + '\n'+
+                                        "Roll: "        + '\n'+
+                                        "Voltage: ", 
+                                    font=("Helvetica", 20),
+                                    text_color=self.color_texto_negro)
         
         self.left_label.pack(pady=10)
-        self.satelites_label.pack()
-        self.white_top_label.pack()
-        self.white_bottom_label.pack()
+        self.satelites_label.place(relx=0.1,rely=0.8)
+        self.white_top_label.pack(pady=70)
+        self.white_bottom_label.pack(pady=70)
         
         # Switches para la telemetria
         switch_var_telemetry = StringVar(value="off")
@@ -187,11 +189,13 @@ class InterfazApp:
 
         # Command buttons
         calibrate_altitude_button = self.custom_button(self.right_frame, "Calibrate Altitude", self.calibrate_altitude)
-        calibrate_altitude_button.place(relx=0.05,rely=0.2)
+        calibrate_altitude_button.place(relx=0.05,rely=0.3)
+
         set_time_button = self.custom_button(self.right_frame, "Set time", self.set_time)
-        set_time_button.place(relx=0.05,rely=0.4)
+        set_time_button.place(relx=0.05,rely=0.5)
+        
         save_and_export_button = self.custom_button(self.right_frame, "Save and export", self.save_and_export)
-        save_and_export_button.place(relx=0.05,rely=0.6)
+        save_and_export_button.place(relx=0.05,rely=0.7)
 
         # Botón de regresar
         backbutton = self.custom_button(self.left_frame, "Return", self.pantalla_inicial)
@@ -227,7 +231,7 @@ class InterfazApp:
         self.Sent_packages       = 1
         self.Recieved_packages   = "0"
         self.Last_command        = "NA"
-        self.UTH_time            = "hh:mm:ss"
+        self.UTH_time            = datetime.utcnow().strftime('%H:%M:%S')
         self.Mission_time        = "T hh:mm:ss"
         self.HeatShield          = "Not Deployed"
         self.Parachute           = "Not Deployed"
@@ -251,7 +255,7 @@ class InterfazApp:
         self.left_label.configure(text= 
                                     "UTC Time: "            + self.UTH_time +'\n'+
                                     "Mission time: "        + self.Mission_time+'\n'+
-                                    "State"                 + self.state+'\n'+
+                                    "State: "               + self.state+'\n'+
                                     "Sent packages: "       + nuevo_texto+'\n'+
                                     "Recieved packages: "   + nuevo_texto+'\n'+
                                     "Last Command: "        + self.Last_command)

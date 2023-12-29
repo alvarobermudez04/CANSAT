@@ -1,41 +1,50 @@
-from customtkinter import *
+import tkinter as tk
+from tkinter import ttk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
+import pandas as pd #pip install matplotlib pandas
+from pandas.plotting import register_matplotlib_converters
 
-class InterfazApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("GroundStation")
+# Registra convertidores para fechas si es necesario
+register_matplotlib_converters()
 
-        self.root.configure(fg_color="white")
-        self.root.after(0, lambda: self.root.state('zoomed'))
+# Crear datos de ejemplo (puedes reemplazar esto con tu DataFrame)
+data = {'Fecha': pd.date_range('2023-01-01', '2023-01-10'),
+        'Valor': [10, 15, 20, 18, 25, 30, 22, 28, 35, 40]}
+df = pd.DataFrame(data)
 
-        self.frame = CTkFrame(self.root, fg_color="gray")
-        self.frame.place(relwidth=0.26, relheight=1)
+# Función para graficar en Matplotlib
+def plot_graph():
+    # Limpiar el área de la figura si ya hay un gráfico
+    for widget in frame.winfo_children():
+        widget.destroy()
 
-        self.label = CTkLabel(self.frame, text="Texto inicial")
-        self.label.pack(pady=10)
-        self.numero = 0
+    # Crear una figura de Matplotlib
+    fig, ax = plt.subplots(figsize=(5, 4))
+    ax.plot(df['Fecha'], df['Valor'], marker='o', linestyle='-')
+    ax.set_title('Gráfico de ejemplo')
+    ax.set_xlabel('Fecha')
+    ax.set_ylabel('Valor')
 
-        self.start_stop_button = CTkButton(self.frame, text="Start/Stop", command=self.toggle_count)
-        self.start_stop_button.pack(pady=10)
+    # Integrar la figura en la interfaz de Tkinter
+    canvas = FigureCanvasTkAgg(fig, master=frame)
+    canvas_widget = canvas.get_tk_widget()
+    canvas_widget.pack()
 
-        self.counting = False
-        self.actualizar_contenido()
+# Crear la ventana principal de Tkinter
+root = tk.Tk()
+root.title("Interfaz con Matplotlib")
 
-    def toggle_count(self):
-        # Cambiar el estado de la cuenta (iniciar/detener)
-        self.counting = not self.counting
+# Crear un marco para colocar el gráfico
+frame = ttk.Frame(root)
+frame.pack(padx=10, pady=10)
 
-    def actualizar_contenido(self):
-        if self.counting:
-            self.numero += 1
-            nuevo_texto = str(self.numero)
-            self.label.configure(text=nuevo_texto)
+# Botón para actualizar el gráfico
+update_button = ttk.Button(root, text="Actualizar Gráfico", command=plot_graph)
+update_button.pack(pady=10)
 
-        # Llamar a la función después de 1000 milisegundos (1 segundo)
-        self.root.after(1000, self.actualizar_contenido)
+# Inicializar el gráfico
+plot_graph()
 
-
-if __name__ == "__main__":
-    root = CTk()
-    app = InterfazApp(root)
-    root.mainloop()
+# Iniciar el bucle principal de Tkinter
+root.mainloop()
