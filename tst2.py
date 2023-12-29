@@ -12,42 +12,52 @@ class InterfazApp:
     def pantalla_inicial(self):
         # Limpiar la pantalla actual
         self.clear_screen()
-
-        self.color_fondo        = "#FAFAFA"
-        self.color_frame        = "#0E1734"
-        self.color_bordes       = "#636363"
-        self.color_texto_blanco = "#D9D9D9"
-        self.color_texto_negro  = "#1A1A1A"
+        
+        # Lista de colores
+        self.color_fondo            = "#FAFAFA"
+        self.color_frame            = "#0E1734"
+        self.color_bordes_frames    = "#F68A2E"
+        self.color_texto_blanco     = "#D9D9D9"
+        self.color_texto_negro      = "#1A1A1A"
 
         # Configura fullsize y color de fondo
         self.root.configure(fg_color=self.color_fondo)
         self.root.after(0,lambda:self.root.state('zoomed'))
         
         # Crear un Frame para el titulo y los botones en el centro
+        background_frame = CTkFrame(self.root)
+        background_frame.place(relwidth=1,relheight=1)
         main_frame = CTkFrame(self.root, fg_color=self.color_frame,corner_radius=30)
         main_frame.place(relx=0.55,relwidth=0.45,relheight=1)
-
+        
         # Titulo
         CTkLabel(main_frame, text="Team #2075", font=("Helvetica", 16),text_color=self.color_texto_blanco).pack(pady=200)
 
-        # Botones e imágenes
-        button_mission = CTkButton(main_frame, text="New Mission", command=self.pantalla_mission, width=300,height=50,corner_radius=30,border_width=3).pack(pady=10)
-        
-        button_simulation = CTkButton(main_frame, text="Go to simulation", command=self.pantalla_simulation,width=300,height=50,corner_radius=30,border_width=3).pack(pady=10)
-        
+        # Botones
+        button_mission = self.custom_button(main_frame, "New Mission", self.pantalla_mission)
+        button_mission.pack(pady=10)
+
+        button_simulation = self.custom_button(main_frame, "Go to simulation", self.pantalla_simulation)
+        button_simulation.pack(pady=10)
+
         img_size=150
         # Cargar las imágenes
-        self.gia_logo = CTkImage(dark_image=Image.open("GroundStation\gia logo.jpg"), size=(img_size,img_size))
-        self.cansat_logo = CTkImage(dark_image=Image.open("GroundStation\cansat logo.png"), size=(img_size,img_size))
-        self.team_logo = CTkImage(dark_image=Image.open("GroundStation\\team logo.jpg"), size=(img_size,img_size))
+        width = self.root.winfo_screenwidth()
+        height = self.root.winfo_screenheight()
 
-        #coloca las imagenes
+        self.fondo_inicio   = CTkImage(dark_image=Image.open("GroundStation\\fondo inicio.jpg"),size=(width,height))
+        self.gia_logo       = CTkImage(dark_image=Image.open("GroundStation\gia logo.jpg"),    size=(img_size,img_size))
+        self.cansat_logo    = CTkImage(dark_image=Image.open("GroundStation\cansat logo.png"), size=(img_size,img_size))
+        self.team_logo      = CTkImage(dark_image=Image.open("GroundStation\\team logo.jpg"),  size=(img_size,img_size))
+
+        # coloca las imagenes
+        
+        CTkLabel(background_frame, image=self.fondo_inicio, text="").place(relwidth=1, relheight=1)
         CTkLabel(main_frame, image=self.team_logo, text="").place(rely=0.7,relx=0.375*2-0.02)
         CTkLabel(main_frame, image=self.gia_logo, text="").place(rely=0.7,relx=0.02)
         CTkLabel(main_frame, image=self.cansat_logo, text="").place(rely=0.7,relx=0.375)
         
-        
-    def pantalla_mission(self):
+    def pantalla_mission(self):       
         # Limpiar la pantalla actual
         self.clear_screen()
 
@@ -55,31 +65,252 @@ class InterfazApp:
         self.left_frame = CTkFrame(self.root, fg_color=self.color_frame)
         self.left_frame.place(relwidth=0.26,relheight=1)
         
-        self.center_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, border_color=self.color_bordes,border_width=4,corner_radius=20)
-        self.center_frame.place(relx=0.28, rely=0.02,relwidth=0.7,relheight=0.32)
-
-        self.bottom_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, border_color=self.color_bordes,border_width=4,corner_radius=20)  
-        self.bottom_frame.place(relx=0.28, rely=0.37,relwidth=0.7,relheight=0.6)
+        self.center_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
+                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)
+        self.center_frame.place(relx=0.28, rely=0.02,relwidth=0.38,relheight=0.32)
         
+        self.right_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
+                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)
+        self.right_frame.place(relx=0.68, rely=0.02,relwidth=0.3,relheight=0.32)
+
+        self.bottom_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
+                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)  
+        self.bottom_frame.place(relx=0.28, rely=0.37,relwidth=0.7,relheight=0.6)
+
+        self.white_top_frame = CTkFrame(self.bottom_frame, fg_color="white", corner_radius=20)  
+        self.white_top_frame.place(relx=0.5, rely=0.02,relwidth=0.48,relheight=0.47)
+
+        self.white_bottom_frame = CTkFrame(self.bottom_frame, fg_color="white", corner_radius=20)  
+        self.white_bottom_frame.place(relx=0.5, rely=0.51,relwidth=0.48,relheight=0.47)
+
         # Imagen logo
-        CTkLabel(self.left_frame, image=self.team_logo, text="").pack(pady=10)
+        self.team_logo_big      = CTkImage(dark_image=Image.open("GroundStation\\team logo.jpg"),  size=(200,200))
+        CTkLabel(self.left_frame, image=self.team_logo_big, text="").pack(pady=10)
 
-        # Titulo
-        CTkLabel(self.left_frame, text="Team #2075", font=("Helvetica", 16)).pack(pady=20)
+        # Variables
+        self.state               = "not conected"
+        self.Sent_packages       = 0
+        self.Recieved_packages   = "0"
+        self.Last_command        = "NA"
+        self.UTH_time            = "hh:mm:ss"
+        self.Mission_time        = "T hh:mm:ss"
+        self.HeatShield          = "Not Deployed"
+        self.Parachute           = "Not Deployed"
+        self.Satelites           = "0"
+        self.GPS_time            = "hh:mm:ss"
+        self.GPS_latitude        = "x"
+        self.GPS_longitude       = "x"
+        self.GPS_altiude         = "x"
+        self.Speed               = "x"
+        self.Pressure            = "x"
+        self.Temperature         = "x"
+        self.WindSpeed           = "x"
+        self.Altitude            = "x"
+        self.Tilt_x              = "x"
+        self.Tilt_y              = "x"
+        self.Roll                = "x"
+        self.Voltage             = "x"
 
-        # Boton simulacion
-        simulationbutton = self.custom_button(self.left_frame, "Go to simulation", self.pantalla_simulation)
-        simulationbutton.pack(pady=10)
+        # Titulo y textos
+        CTkLabel(self.left_frame, text="Team #2075"  , font=("Helvetica", 30,"bold"),
+                 text_color=self.color_texto_blanco).pack(pady=20)
+        CTkLabel(self.center_frame, text="Indicators", font=("Helvetica", 35,"bold"),
+                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
+        CTkLabel(self.right_frame , text="Commands"  , font=("Helvetica", 30,"bold"),
+                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
+        CTkLabel(self.bottom_frame, text="Data"      , font=("Helvetica", 30,"bold"),
+                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
+
+        self.left_label         = CTkLabel(self.left_frame, 
+                                            text="UTC Time: "+ '\n'+
+                                                "Mission time: "        + '\n'+
+                                                "State"                 + '\n'+
+                                                "Sent packages: "       + '\n'+
+                                                "Recieved packages: "   + '\n'+  
+                                                "Last Command: ", 
+                                            justify=LEFT,
+                                            font=("Helvetica", 30),                                                   
+                                            text_color=self.color_texto_blanco)
+    
+        
+        self.satelites_label    = CTkLabel(self.bottom_frame, 
+                                            text="Satelites conected: "+ '\n'+
+                                                "GPS Time: "     ,
+                                            justify=LEFT,
+                                            font=("Helvetica", 30),
+                                            text_color=self.color_texto_negro)
+                                                   
+        self.white_top_label        = CTkLabel(self.white_top_frame, 
+                                            text=
+                                            "Speed: "       + '\n'+
+                                            "Temperature: " + '\n'+
+                                            "Pressure: "    + '\n'+
+                                            "Wind Speed: ", 
+                                            font=("Helvetica", 20),
+                                            text_color=self.color_texto_negro)
+        
+        self.white_bottom_label     = CTkLabel(self.white_bottom_frame, 
+                                            text=
+                                            "Altitude: "    + '\n'+
+                                            "Tilt: "        + '\n'+
+                                            "Roll: "        + '\n'+
+                                            "Voltage: ", 
+                                            font=("Helvetica", 20),
+                                            text_color=self.color_texto_negro)
+        
+        self.left_label.pack(pady=10)
+        self.satelites_label.pack()
+        self.white_top_label.pack()
+        self.white_bottom_label.pack()
+        
+        # Switches para la telemetria
+        self.switch_var_telemetry = StringVar(value="off")
+        self.switch_var_heatshield = StringVar(value="off")
+        self.switch_var_parachute = StringVar(value="off")
+        self.switch_var_audiobeacon = StringVar(value="off")
+
+        self.start_telemetry_switch   = CTkSwitch(self.center_frame, 
+                                                text="Start telemetry",
+                                                progress_color="#3DBA50",
+                                                command=self.telemetry_on,
+                                                variable=self.switch_var_telemetry, 
+                                                onvalue="on",
+                                                offvalue="off",
+                                                font=("Helvetica", 30),
+                                                text_color=self.color_texto_negro).place(relx=0.05,rely=0.35)
+        
+        self.start_heatshield_switch  = CTkSwitch(self.center_frame, 
+                                                text="Heatshield",
+                                                progress_color="#3DBA50",
+                                                command=self.heatshield_on,
+                                                variable=self.switch_var_heatshield, 
+                                                onvalue="on",
+                                                offvalue="off",
+                                                font=("Helvetica", 30),
+                                                text_color=self.color_texto_negro).place(relx=0.05,rely=0.5)
+        
+        self.start_parachute_switch   = CTkSwitch(self.center_frame, 
+                                                text="Parachute",
+                                                progress_color="#3DBA50",
+                                                command=self.parachute_on,
+                                                variable=self.switch_var_parachute, 
+                                                onvalue="on",
+                                                offvalue="off",
+                                                font=("Helvetica", 30),
+                                                text_color=self.color_texto_negro).place(relx=0.05,rely=0.65)
+        
+        self.start_audiobeacon_switch = CTkSwitch(self.center_frame, 
+                                                text="Audiobeacon",
+                                                progress_color="#3DBA50",
+                                                command=self.audiobeacon_on,
+                                                variable=self.switch_var_audiobeacon, 
+                                                onvalue="on",
+                                                offvalue="off",
+                                                font=("Helvetica", 30),
+                                                text_color=self.color_texto_negro).place(relx=0.05,rely=0.8)
+
+        # Command buttons
+        calibrate_altitude_button = self.custom_button(self.right_frame, "Calibrate Altitude", self.calibrate_altitude)
+        calibrate_altitude_button.place(relx=0.05,rely=0.2)
+        set_time_button = self.custom_button(self.right_frame, "Set time", self.set_time)
+        set_time_button.place(relx=0.05,rely=0.4)
+        save_and_export_button = self.custom_button(self.right_frame, "Save and export", self.save_and_export)
+        save_and_export_button.place(relx=0.05,rely=0.6)
 
         # Botón de regresar
         backbutton = self.custom_button(self.left_frame, "Return", self.pantalla_inicial)
-        backbutton.pack(pady=10)
+        backbutton.place(relx=0.2,rely=0.9)
+
+        self.telemetry_switch_activated = False
+
+    def telemetry_on(self):
+        if self.switch_var_telemetry.get() == "on":
+            # Llamar a la función después de 1000 milisegundos (1 segundo)
+            self.root.after(1000, self.actualizar_contenido)
+        else:
+            self.telemetry_switch_activated = False
+
+
+    def heatshield_on(self):
+        pass
+    
+    def parachute_on(self):
+        pass
+    
+    def audiobeacon_on(self):
+        pass
+
+    def calibrate_altitude(self):
+        pass
+
+    def set_time(self):
+        pass
+
+    def save_and_export(self):
+        pass
+    
+    def actualizar_contenido(self):
+        
+        # Actualizar variables
+        self.state               = "not conected"
+        self.Sent_packages       += 1
+        self.Recieved_packages   = "0"
+        self.Last_command        = "NA"
+        self.UTH_time            = "hh:mm:ss"
+        self.Mission_time        = "T hh:mm:ss"
+        self.HeatShield          = "Not Deployed"
+        self.Parachute           = "Not Deployed"
+        self.Satelites           = "0"
+        self.GPS_time            = "hh:mm:ss"
+        self.GPS_latitude        = "x"
+        self.GPS_longitude       = "x"
+        self.GPS_altiude         = "x"
+        self.Speed               = "x"
+        self.Pressure            = "x"
+        self.Temperature         = "x"
+        self.WindSpeed           = "x"
+        self.Altitude            = "x"
+        self.Tilt_x              = "x"
+        self.Tilt_y              = "x"
+        self.Roll                = "x"
+        self.Voltage             = "x"
+        nuevo_texto = str(self.Sent_packages)
+
+        # Actualizar textos
+        self.left_label.configure(text= 
+                                    "UTC Time: "            + self.UTH_time +'\n'+
+                                    "Mission time: "        + self.Mission_time+'\n'+
+                                    "State"                 + self.state+'\n'+
+                                    "Sent packages: "       + nuevo_texto+'\n'+
+                                    "Recieved packages: "   + nuevo_texto+'\n'+
+                                    "Last Command: "        + self.Last_command)
+    
+        self.satelites_label.configure(text=
+                                    "Satelites conected: "  + self.Satelites+'\n'+
+                                    "GPS Time: "            + self.GPS_time)
+        
+        self.white_top_label.configure(text=
+                                    "Speed: "               + self.Speed        +' m/s\n'+
+                                    "Temperature: "         + self.Temperature  +' °C\n'+
+                                    "Pressure: "            + self.Pressure     +' kPa\n'+
+                                    "Wind Speed: "          + self.WindSpeed    +' m/s')
+        self.white_bottom_label.configure(text=
+                                    "Altitude: "            + self.Altitude     +' m\n'+
+                                    "Tilt: "                + self.Tilt_x       +' °\n'+
+                                    "Roll: "                + self.Roll         +' °/s\n'+
+                                    "Voltage: "             + self.Voltage      +' m/s')
+        
+        # Llamar a la función después de 1000 milisegundos (1 segundo)
+        self.root.after(1000, self.actualizar_contenido)
 
     def pantalla_simulation(self):
         # Limpiar la pantalla actual
         self.clear_screen()
 
         CTkLabel(self.root, text="Simulation Mode", font=("Helvetica", 16)).pack(pady=20)
+
+        
+
 
         # Botón de regresar
         backbutton = self.custom_button(self.root, "Return", self.pantalla_inicial)
@@ -91,7 +322,16 @@ class InterfazApp:
             widget.destroy()
 
     def custom_button(self, lugar, texto, comando):
-        return CTkButton(lugar, text=texto, command=comando, width=300, height=50, corner_radius=30)
+        # Configuracion de los botones
+        return CTkButton(lugar, text=texto, command=comando,
+        width=250, 
+        height=50, 
+        corner_radius=30,
+        fg_color=self.color_frame,
+        font=("Helvetica", 20),
+        border_width=3,
+        border_color=self.color_bordes_frames,
+        hover_color="#243B86")
 
 if __name__ == "__main__":
     root = CTk()
