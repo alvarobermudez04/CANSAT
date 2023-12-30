@@ -1,11 +1,52 @@
 from customtkinter import *     #pip install customtkinter
 from PIL import Image           #pip install PIL
 from datetime import datetime
+import serial                   #pip install pyserial
+import pandas as pd             #pip install pandas
 
 class InterfazApp:
     def __init__(self, root):
         self.root = root
         self.root.title("GroundStation")
+
+        # Configura el objeto Serial
+        try:
+            self.ser = serial.Serial('COM3', 9600)  # Asegúrate de ajustar la velocidad de baudios según tu configuración
+        except serial.SerialException:
+            print("No se puede abrir el puerto COM3. Asegúrate de que el dispositivo esté conectado correctamente.")
+            exit()
+
+        # Crea un DataFrame vacío
+        self.columnas = ['TEAM_ID', 'MISSION_TIME', 'PACKET_COUNT', 'MODE', 'STATE', 'ALTITUDE',
+                    'AIR_SPEED', 'HS_DEPLOYED', 'PC_DEPLOYED', 'TEMPERATURE', 'VOLTAGE',
+                    'PRESSURE', 'GPS_TIME', 'GPS_ALTITUDE', 'GPS_LATITUDE', 'GPS_LONGITUDE',
+                    'GPS_SATS', 'TILT_X', 'TILT_Y', 'ROT_Z', 'CMD_ECHO']
+
+        self.df = pd.DataFrame(columns=self.columnas)
+
+        # Variables para almacenar datos
+        self.state = "not connected"
+        self.Sent_packages = "0"
+        self.Recieved_packages = "0"
+        self.Last_command = "NA"
+        self.UTH_time = "hh:mm:ss"
+        self.Mission_time = "T hh:mm:ss"
+        self.HeatShield = "Not Deployed"
+        self.Parachute = "Not Deployed"
+        self.Satelites = "0"
+        self.GPS_time = "hh:mm:ss"
+        self.GPS_latitude = "0"
+        self.GPS_longitude = "0"
+        self.GPS_altitude = "0"
+        self.Speed = "0"
+        self.Pressure = "0"
+        self.Temperature = "0"
+        self.WindSpeed = "0"
+        self.Altitude = "0"
+        self.Tilt_x = "0"
+        self.Tilt_y = "0"
+        self.Roll = "0"
+        self.Voltage = "0"
 
         # Pantalla Inicial
         self.pantalla_inicial()
@@ -107,7 +148,7 @@ class InterfazApp:
                                         "Recieved packages: "   + '\n'+  
                                         "Last Command: ", 
                                     justify=LEFT,
-                                    font=("Helvetica", 30),                                                   
+                                    font=("Helvetica", 20),                                                   
                                     text_color=self.color_texto_blanco)
     
         self.satelites_label    = CTkLabel(self.bottom_frame, 
@@ -142,9 +183,9 @@ class InterfazApp:
         self.white_bottom_label.pack(pady=70)
         
         # Switches para la telemetria
-        switch_var_telemetry = StringVar(value="off")
-        switch_var_heatshield = StringVar(value="off")
-        switch_var_parachute = StringVar(value="off")
+        switch_var_telemetry   = StringVar(value="off")
+        switch_var_heatshield  = StringVar(value="off")
+        switch_var_parachute   = StringVar(value="off")
         switch_var_audiobeacon = StringVar(value="off")
 
         self.start_telemetry_switch   = CTkSwitch(self.center_frame, 
@@ -193,7 +234,7 @@ class InterfazApp:
 
         set_time_button = self.custom_button(self.right_frame, "Set time", self.set_time)
         set_time_button.place(relx=0.05,rely=0.5)
-        
+
         save_and_export_button = self.custom_button(self.right_frame, "Save and export", self.save_and_export)
         save_and_export_button.place(relx=0.05,rely=0.7)
 
@@ -202,6 +243,9 @@ class InterfazApp:
         backbutton.place(relx=0.2,rely=0.9)
 
         self.actualizar_contenido()
+
+
+        
 
     def telemetry_on(self):
         pass
@@ -226,38 +270,46 @@ class InterfazApp:
     
     def actualizar_contenido(self):
         
-        # Actualizar variables
-        self.state               = "not conected"
-        self.Sent_packages       = 1
-        self.Recieved_packages   = "0"
-        self.Last_command        = "NA"
-        self.UTH_time            = datetime.utcnow().strftime('%H:%M:%S')
-        self.Mission_time        = "T hh:mm:ss"
-        self.HeatShield          = "Not Deployed"
-        self.Parachute           = "Not Deployed"
-        self.Satelites           = str(0)
-        self.GPS_time            = "hh:mm:ss"
-        self.GPS_latitude        = "x"
-        self.GPS_longitude       = "x"
-        self.GPS_altiude         = "x"
-        self.Speed               = "x"
-        self.Pressure            = "x"
-        self.Temperature         = "x"
-        self.WindSpeed           = "x"
-        self.Altitude            = "x"
-        self.Tilt_x              = "x"
-        self.Tilt_y              = "x"
-        self.Roll                = "x"
-        self.Voltage             = "x"
-        nuevo_texto = str(self.Sent_packages)
+        # Actualiza las variables con los datos del puerto serie
+        ser = self.ser
+        try:
+            # Lee la línea y la divide por comas para obtener una lista de variables
+            self.variables = ser.readline().decode('utf-8').strip().split(',')
+            self.df = pd.concat([self.df, pd.Series(self.variables, index=self.columnas).to_frame().T], ignore_index=True)
+
+            # Actualiza las variables de la clase
+            self.UTH_time = datetime.utcnow().strftime('%H:%M:%S')
+            self.Sent_packages = self.variables[2]
+            self.Recieved_packages = str(len(self.df))
+            self.state = self.variables[4]
+            self.Altitude = self.variables[5]
+            self.WindSpeed = self.variables[6]
+            self.Temperature = self.variables[9]
+            self.Voltage = self.variables[10]
+            self.Pressure = self.variables[11]
+            self.GPS_time = self.variables[12]
+            self.GPS_altitude = self.variables[13]
+            self.GPS_latitude = self.variables[14]
+            self.GPS_longitude = self.variables[15]
+            self.Satelites = self.variables[16]
+            self.Tilt_x = self.variables[17]
+            self.Tilt_y = self.variables[18]
+            self.Roll = self.variables[19]
+            self.Last_command = self.variables[20]
+            # ... (actualizar otras variables según sea necesario)
+
+            
+
+        except Exception as e:
+            print(f"Error al leer desde el puerto serie: {e}")
 
         # Actualizar labels
         self.left_label.configure(text= 
                                     "UTC Time: "            + self.UTH_time +'\n'+
                                     "Mission time: "        + self.Mission_time+'\n'+
                                     "State: "               + self.state+'\n'+
-                                    "Sent packages: "       + nuevo_texto+'\n'+
-                                    "Recieved packages: "   + nuevo_texto+'\n'+
+                                    "Sent packages: "       + self.Sent_packages+'\n'+
+                                    "Recieved packages: "   + self.Recieved_packages+'\n'+
                                     "Last Command: "        + self.Last_command)
     
         self.satelites_label.configure(text=
@@ -278,6 +330,7 @@ class InterfazApp:
         
         # Llamar a la función después de 1000 milisegundos (1 segundo)
         self.root.after(1000, self.actualizar_contenido)
+        
 
     def pantalla_simulation(self):
         # Limpiar la pantalla actual
