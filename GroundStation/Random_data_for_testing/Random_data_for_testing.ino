@@ -1,33 +1,54 @@
 #include <Wire.h>
 
+// Declaraciones de variables globales
+int TEAM_ID = 2075;
+String MISSION_TIME = "12:00:00";
+int PACKET_COUNT = 1;
+String MODE = "F";
+String STATE = "Arduino_connected";
+float ALTITUDE = 10.1;
+float AIR_SPEED = 5.5;
+String HS_DEPLOYED = "N";
+String PC_DEPLOYED = "N";
+float TEMPERATURE = 25.0;
+float VOLTAGE = 12.0;
+float PRESSURE = 101.325;
+String GPS_TIME = "12:34:56";
+float GPS_ALTITUDE = 10.7;
+float GPS_LATITUDE = 9.920901;
+float GPS_LONGITUDE = -84.056108;
+int GPS_SATS = 8;
+float TILT_X = 1.0;
+float TILT_Y = 2.0;
+float ROT_Z = 3.0;
+String CMD_ECHO = "CMD,2075,CX,OFF";
+
 void setup() {
   Serial.begin(9600);
   randomSeed(analogRead(0));  // Inicializar la semilla para generar números aleatorios
 }
 
 void loop() {
-  // Valores ficticios para cada campo
-  int TEAM_ID = 2075;
-  String MISSION_TIME = "12:00:00";
-  static int PACKET_COUNT = 1;
-  String MODE = "F";
-  String STATE = "Arduino_connected";
-  float ALTITUDE = 10.1;
-  float AIR_SPEED = 5.5;
-  String HS_DEPLOYED = "N";
-  String PC_DEPLOYED = "N";
-  float TEMPERATURE = 25.0;
-  float VOLTAGE = 12.0;
-  float PRESSURE = 101.325;
-  String GPS_TIME = "12:34:56";
-  float GPS_ALTITUDE = 10.7;
-  float GPS_LATITUDE = 9.920901;
-  float GPS_LONGITUDE = -84.056108;
-  int GPS_SATS = 8;
-  float TILT_X = 1.0;
-  float TILT_Y = 2.0;
-  float ROT_Z = 3.0;
-  String CMD_ECHO = "CMD2075CXOFF";
+  // Leer el puerto serial
+  if (Serial.available() > 0) {
+    String receivedCommand = Serial.readStringUntil('\n');
+    if (receivedCommand == "CX,ON") {
+      CMD_ECHO = "CMD,2075,CX,ON";
+      }
+
+    else if (receivedCommand == "CX,OFF") {
+      CMD_ECHO = "CMD,2075,CX,OFF";
+      } 
+
+    else if (receivedCommand == "ST") {
+      CMD_ECHO = "CMD,2075,ST,ON";
+      } 
+
+    else if (receivedCommand == "SIM") {
+      CMD_ECHO = "CMD,2075,SIM,ON";
+      }
+  }
+
 
   // Generar un número aleatorio entre 0 y 9
   int randomValue = random(10);
@@ -77,8 +98,8 @@ void loop() {
     Serial.print(CMD_ECHO);
     Serial.println(); // Nueva línea al final del string
 
-    
+    PACKET_COUNT++; // Incrementar PACKET_COUNT solo si se imprime un paquete
   }
-  PACKET_COUNT++; // Incrementar PACKET_COUNT solo si se imprime un paquete
+
   delay(1000); // Esperar un segundo
 }

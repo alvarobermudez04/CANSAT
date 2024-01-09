@@ -14,13 +14,13 @@ class InterfazApp:
             self.ser = serial.Serial('COM3', 9600)  # Asegúrate de ajustar la velocidad de baudios según tu configuración
         except serial.SerialException:
             print("No se puede abrir el puerto COM3. Asegúrate de que el dispositivo esté conectado correctamente.")
-            exit()
+            #exit()
 
         # Crea un DataFrame vacío
         self.columnas = ['TEAM_ID', 'MISSION_TIME', 'PACKET_COUNT', 'MODE', 'STATE', 'ALTITUDE',
                     'AIR_SPEED', 'HS_DEPLOYED', 'PC_DEPLOYED', 'TEMPERATURE', 'VOLTAGE',
                     'PRESSURE', 'GPS_TIME', 'GPS_ALTITUDE', 'GPS_LATITUDE', 'GPS_LONGITUDE',
-                    'GPS_SATS', 'TILT_X', 'TILT_Y', 'ROT_Z', 'CMD_ECHO']
+                    'GPS_SATS', 'TILT_X', 'TILT_Y', 'ROT_Z', 'CMD', '2075','Last command','Data']
 
         self.df = pd.DataFrame(columns=self.columnas)
 
@@ -29,6 +29,7 @@ class InterfazApp:
         self.Sent_packages = "0"
         self.Recieved_packages = "0"
         self.Last_command = "NA"
+        self.Last_data = "NA"
         self.UTH_time = "hh:mm:ss"
         self.Mission_time = "T hh:mm:ss"
         self.HeatShield = "Not Deployed"
@@ -183,16 +184,16 @@ class InterfazApp:
         self.white_bottom_label.pack(pady=70)
         
         # Switches para la telemetria
-        switch_var_telemetry   = StringVar(value="off")
-        switch_var_heatshield  = StringVar(value="off")
-        switch_var_parachute   = StringVar(value="off")
-        switch_var_audiobeacon = StringVar(value="off")
+        self.switch_var_telemetry   = StringVar(value="off")
+        self.switch_var_heatshield  = StringVar(value="off")
+        self.switch_var_parachute   = StringVar(value="off")
+        self.switch_var_audiobeacon = StringVar(value="off")
 
         self.start_telemetry_switch   = CTkSwitch(self.center_frame, 
                                                 text="Start telemetry",
                                                 progress_color="#3DBA50",
                                                 command=self.telemetry_on,
-                                                variable=switch_var_telemetry, 
+                                                variable=self.switch_var_telemetry, 
                                                 onvalue="on",
                                                 offvalue="off",
                                                 font=("Helvetica", 30),
@@ -202,7 +203,7 @@ class InterfazApp:
                                                 text="Heatshield",
                                                 progress_color="#3DBA50",
                                                 command=self.heatshield_on,
-                                                variable=switch_var_heatshield, 
+                                                variable=self.switch_var_heatshield, 
                                                 onvalue="on",
                                                 offvalue="off",
                                                 font=("Helvetica", 30),
@@ -212,7 +213,7 @@ class InterfazApp:
                                                 text="Parachute",
                                                 progress_color="#3DBA50",
                                                 command=self.parachute_on,
-                                                variable=switch_var_parachute, 
+                                                variable=self.switch_var_parachute, 
                                                 onvalue="on",
                                                 offvalue="off",
                                                 font=("Helvetica", 30),
@@ -222,7 +223,7 @@ class InterfazApp:
                                                 text="Audiobeacon",
                                                 progress_color="#3DBA50",
                                                 command=self.audiobeacon_on,
-                                                variable=switch_var_audiobeacon, 
+                                                variable=self.switch_var_audiobeacon, 
                                                 onvalue="on",
                                                 offvalue="off",
                                                 font=("Helvetica", 30),
@@ -248,7 +249,12 @@ class InterfazApp:
         
 
     def telemetry_on(self):
-        pass
+        if self.switch_var_telemetry.get() == "on":
+            mensaje = "CX,ON"
+            self.ser.write(mensaje.encode())
+        elif self.switch_var_telemetry.get() == "off":
+            mensaje = "CX,OFF"
+            self.ser.write(mensaje.encode())
 
     def heatshield_on(self):
         pass
@@ -260,10 +266,12 @@ class InterfazApp:
         pass
 
     def calibrate_altitude(self):
-        pass
+        mensaje = "CAL"
+        self.ser.write(mensaje.encode())
 
     def set_time(self):
-        pass
+        mensaje = "ST"
+        self.ser.write(mensaje.encode())
 
     def save_and_export(self):
         pass
@@ -295,7 +303,13 @@ class InterfazApp:
             self.Tilt_x = self.variables[17]
             self.Tilt_y = self.variables[18]
             self.Roll = self.variables[19]
-            self.Last_command = self.variables[20]
+            self.Last_command = self.variables[22]
+            self.Last_data = self.variables[23]
+            #mission time
+            #hs deployed
+            #pc deployed
+            #mode
+            
             # ... (actualizar otras variables según sea necesario)
 
             
@@ -310,7 +324,8 @@ class InterfazApp:
                                     "State: "               + self.state+'\n'+
                                     "Sent packages: "       + self.Sent_packages+'\n'+
                                     "Recieved packages: "   + self.Recieved_packages+'\n'+
-                                    "Last Command: "        + self.Last_command)
+                                    "Last Command: "        + self.Last_command+'\n'+
+                                    "Last Data: "           + self.Last_data)
     
         self.satelites_label.configure(text=
                                     "Satelites conected: "  + self.Satelites+'\n'+
