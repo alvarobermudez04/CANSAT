@@ -1,50 +1,33 @@
 import tkinter as tk
-from tkinter import ttk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.pyplot as plt
-import pandas as pd #pip install matplotlib pandas
-from pandas.plotting import register_matplotlib_converters
+from PIL import Image, ImageTk, ImageDraw
 
-# Registra convertidores para fechas si es necesario
-register_matplotlib_converters()
+def round_corners(image_path):
+    original_image = Image.open(image_path)
+    rounded_image = Image.new("RGBA", original_image.size, (0, 0, 0, 0))
+    mask = Image.new("L", original_image.size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.rounded_rectangle([0, 0, original_image.width, original_image.height], 20, fill=255)
+    rounded_image.paste(original_image, (0, 0), mask)
+    return rounded_image
 
-# Crear datos de ejemplo (puedes reemplazar esto con tu DataFrame)
-data = {'Fecha': pd.date_range('2023-01-01', '2023-01-10'),
-        'Valor': [10, 15, 20, 18, 25, 30, 22, 28, 35, 40]}
-df = pd.DataFrame(data)
+def main():
+    root = tk.Tk()
+    root.title("Image with Rounded Corners")
+    root.configure(bg="black")
+    # Ruta de la imagen
+    image_path = r"GroundStation\team logo.jpg"  # Reemplaza con la ruta de tu imagen
 
-# Función para graficar en Matplotlib
-def plot_graph():
-    # Limpiar el área de la figura si ya hay un gráfico
-    for widget in frame.winfo_children():
-        widget.destroy()
+    # Crear imagen con esquinas redondeadas
+    rounded_image = round_corners(image_path)
 
-    # Crear una figura de Matplotlib
-    fig, ax = plt.subplots(figsize=(5, 4))
-    ax.plot(df['Fecha'], df['Valor'], marker='o', linestyle='-')
-    ax.set_title('Gráfico de ejemplo')
-    ax.set_xlabel('Fecha')
-    ax.set_ylabel('Valor')
+    # Convertir la imagen redondeada a PhotoImage
+    rounded_image_tk = ImageTk.PhotoImage(rounded_image)
 
-    # Integrar la figura en la interfaz de Tkinter
-    canvas = FigureCanvasTkAgg(fig, master=frame)
-    canvas_widget = canvas.get_tk_widget()
-    canvas_widget.pack()
+    # Crear label y mostrar la imagen
+    label = tk.Label(root, image=rounded_image_tk)
+    label.pack()
 
-# Crear la ventana principal de Tkinter
-root = tk.Tk()
-root.title("Interfaz con Matplotlib")
+    root.mainloop()
 
-# Crear un marco para colocar el gráfico
-frame = ttk.Frame(root)
-frame.pack(padx=10, pady=10)
-
-# Botón para actualizar el gráfico
-update_button = ttk.Button(root, text="Actualizar Gráfico", command=plot_graph)
-update_button.pack(pady=10)
-
-# Inicializar el gráfico
-plot_graph()
-
-# Iniciar el bucle principal de Tkinter
-root.mainloop()
+if __name__ == "__main__":
+    main()

@@ -1,5 +1,6 @@
 from customtkinter import *     #pip install customtkinter
-from PIL import Image           #pip install PIL
+from customtkinter import filedialog
+from PIL import Image,ImageDraw           #pip install PIL
 from datetime import datetime
 import serial                   #pip install pyserial
 import pandas as pd             #pip install pandas
@@ -74,132 +75,60 @@ class InterfazApp:
         main_frame.place(relwidth=0.45,relheight=1)
         
         # Titulo
-        CTkLabel(main_frame, text="Team #2075", font=("Helvetica", 16),text_color=self.color_texto_blanco).pack(pady=200)
+        CTkLabel(main_frame, text="Team #2075" + '\n'+"Ground Station", 
+                 font=("Helvetica", 30),text_color=self.color_texto_blanco).place(relx=0.35,rely=0.27)
 
         # Botones
         button_mission = self.custom_button(main_frame, "New Mission", self.pantalla_mission)
-        button_mission.pack(pady=10)
+        button_mission.place(relx=0.33,rely=0.4)
 
         button_simulation = self.custom_button(main_frame, "Go to simulation", self.pantalla_simulation)
-        button_simulation.pack(pady=10)
+        button_simulation.place(relx=0.33,rely=0.5)
 
-        img_size=150
         # Cargar las imágenes
         width = self.root.winfo_screenwidth()
         height = self.root.winfo_screenheight()
+        
+        def round_corners(image_path, corner_radius):
+            original_image = Image.open(image_path)
+            rounded_image = Image.new("RGBA", original_image.size, (0, 0, 0, 0))
+            mask = Image.new("L", original_image.size, 0)
+            draw = ImageDraw.Draw(mask)
+            draw.rounded_rectangle([0, 0, original_image.width, original_image.height], corner_radius, fill=255)
+            rounded_image.paste(original_image, (0, 0), mask)
+            return rounded_image
 
-        self.fondo_inicio   = CTkImage(dark_image=Image.open("GroundStation\\fondo inicio.jpg"),size=(width,height))
-        self.gia_logo       = CTkImage(dark_image=Image.open("GroundStation\gia logo.jpg"),    size=(img_size,img_size))
-        self.cansat_logo    = CTkImage(dark_image=Image.open("GroundStation\cansat logo.png"), size=(img_size,img_size))
-        self.team_logo      = CTkImage(dark_image=Image.open("GroundStation\\team logo.jpg"),  size=(img_size,img_size))
+        # Crear imágenes redondeadas
+        rounded_gia = round_corners(r"GroundStation\gia logo.jpg", 200)
+        rounded_cansat = round_corners(r"GroundStation\CanSat logo.png", 60)
+        self.rounded_team = round_corners(r"GroundStation\team logo.jpg", 50)
+        rounded_ucr = round_corners(r"GroundStation\ucr logo.jpg", 100)
+
+        self.fondo_inicio   = CTkImage(dark_image=Image.open("GroundStation\\fondo inicio.jpg"), size=(width, height))
+        self.gia_logo       = CTkImage(dark_image=rounded_gia, size=(150, 150))
+        self.cansat_logo    = CTkImage(dark_image=rounded_cansat, size=(150, 150))
+        self.team_logo      = CTkImage(dark_image=self.rounded_team, size=(150, 150))
+        self.ucr_logo       = CTkImage(dark_image=rounded_ucr, size=(150, 150))
 
         # coloca las imagenes
-        
         CTkLabel(background_frame, image=self.fondo_inicio, text="").place(relwidth=1, relheight=1)
-        CTkLabel(main_frame, image=self.team_logo, text="").place(rely=0.7,relx=0.375*2-0.02)
-        CTkLabel(main_frame, image=self.gia_logo, text="").place(rely=0.7,relx=0.02)
-        CTkLabel(main_frame, image=self.cansat_logo, text="").place(rely=0.7,relx=0.375)
-        
-    def pantalla_mission(self):       
-        # Limpiar la pantalla actual
-        self.clear_screen()
+        CTkLabel(main_frame, image=self.ucr_logo, text="",corner_radius=20).place(rely=0.7,relx=0.35*2-0.03)
+        CTkLabel(main_frame, image=self.gia_logo, text="").place(rely=0.7,relx=0.11)
+        CTkLabel(main_frame, image=self.cansat_logo, text="").place(rely=0.7,relx=0.4)
+        CTkLabel(main_frame, image=self.team_logo, text= "").place(rely=0.05,relx=0.4)
 
-        # Frames
-        self.left_frame = CTkFrame(self.root, fg_color=self.color_frame)
-        self.left_frame.place(relwidth=0.26,relheight=1)
-        
-        self.center_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
-                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)
-        self.center_frame.place(relx=0.28, rely=0.02,relwidth=0.38,relheight=0.32)
-        
-        self.right_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
-                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)
-        self.right_frame.place(relx=0.68, rely=0.02,relwidth=0.3,relheight=0.32)
+    def pantalla_mission(self):
+        self.set_up()
+        self.team_label.configure(text="Team #2075" + '\n'+"Flight mode")
 
-        self.bottom_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
-                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)  
-        self.bottom_frame.place(relx=0.28, rely=0.37,relwidth=0.7,relheight=0.6)
+        save_and_export_button = self.custom_button(self.top_right_frame, "Save and export", self.save_and_export)
+        save_and_export_button.place(relx=0.05,rely=0.7)
 
-        self.white_top_frame = CTkFrame(self.bottom_frame, fg_color="white", corner_radius=20)  
-        self.white_top_frame.place(relx=0.5, rely=0.02,relwidth=0.48,relheight=0.47)
-
-        self.white_bottom_frame = CTkFrame(self.bottom_frame, fg_color="white", corner_radius=20)  
-        self.white_bottom_frame.place(relx=0.5, rely=0.51,relwidth=0.48,relheight=0.47)
-
-        # Imagen logo
-        self.team_logo_big      = CTkImage(dark_image=Image.open("GroundStation\\team logo.jpg"),  size=(200,200))
-        CTkLabel(self.left_frame, image=self.team_logo_big, text="").pack(pady=10)
-
-        # Titulo y textos
-        CTkLabel(self.left_frame, text="Team #2075"  , font=("Helvetica", 30,"bold"),
-                 text_color=self.color_texto_blanco).pack(pady=20)
-        CTkLabel(self.center_frame, text="Indicators", font=("Helvetica", 35,"bold"),
-                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
-        CTkLabel(self.right_frame , text="Commands"  , font=("Helvetica", 30,"bold"),
-                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
-        CTkLabel(self.bottom_frame, text="Data"      , font=("Helvetica", 30,"bold"),
-                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
-
-        self.left_label         = CTkLabel(self.left_frame, 
-                                    text=
-                                        "UTC Time: "+ '\n'+
-                                        "Mission time: "        + '\n'+
-                                        "State"                 + '\n'+
-                                        "Sent packages: "       + '\n'+
-                                        "Recieved packages: "   + '\n'+  
-                                        "Last Command: ", 
-                                    justify=LEFT,
-                                    font=("Helvetica", 20),                                                   
-                                    text_color=self.color_texto_blanco)
-    
-        self.satelites_label    = CTkLabel(self.bottom_frame, 
-                                    text=
-                                        "Satelites conected: "+ '\n'+
-                                        "GPS Time: "     ,
-                                    justify=LEFT,
-                                    font=("Helvetica", 30),
-                                    text_color=self.color_texto_negro)
-                                                   
-        self.white_top_label    = CTkLabel(self.white_top_frame, 
-                                    text=
-                                        "Speed: "       + '\n'+
-                                        "Temperature: " + '\n'+
-                                        "Pressure: "    + '\n'+
-                                        "Wind Speed: ", 
-                                    font=("Helvetica", 20),
-                                    text_color=self.color_texto_negro)
-        
-        self.white_bottom_label = CTkLabel(self.white_bottom_frame, 
-                                    text=
-                                        "Altitude: "    + '\n'+
-                                        "Tilt: "        + '\n'+
-                                        "Roll: "        + '\n'+
-                                        "Voltage: ", 
-                                    font=("Helvetica", 20),
-                                    text_color=self.color_texto_negro)
-        
-        self.left_label.pack(pady=10)
-        self.satelites_label.place(relx=0.1,rely=0.8)
-        self.white_top_label.pack(pady=70)
-        self.white_bottom_label.pack(pady=70)
-        
-        # Switches para la telemetria
-        self.switch_var_telemetry   = StringVar(value="off")
         self.switch_var_heatshield  = StringVar(value="off")
         self.switch_var_parachute   = StringVar(value="off")
         self.switch_var_audiobeacon = StringVar(value="off")
 
-        self.start_telemetry_switch   = CTkSwitch(self.center_frame, 
-                                                text="Start telemetry",
-                                                progress_color="#3DBA50",
-                                                command=self.telemetry_on,
-                                                variable=self.switch_var_telemetry, 
-                                                onvalue="on",
-                                                offvalue="off",
-                                                font=("Helvetica", 30),
-                                                text_color=self.color_texto_negro).place(relx=0.05,rely=0.35)
-        
-        self.start_heatshield_switch  = CTkSwitch(self.center_frame, 
+        self.start_heatshield_switch  = CTkSwitch(self.top_center_frame, 
                                                 text="Heatshield",
                                                 progress_color="#3DBA50",
                                                 command=self.heatshield_on,
@@ -209,7 +138,7 @@ class InterfazApp:
                                                 font=("Helvetica", 30),
                                                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.5)
         
-        self.start_parachute_switch   = CTkSwitch(self.center_frame, 
+        self.start_parachute_switch   = CTkSwitch(self.top_center_frame, 
                                                 text="Parachute",
                                                 progress_color="#3DBA50",
                                                 command=self.parachute_on,
@@ -219,7 +148,7 @@ class InterfazApp:
                                                 font=("Helvetica", 30),
                                                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.65)
         
-        self.start_audiobeacon_switch = CTkSwitch(self.center_frame, 
+        self.start_audiobeacon_switch = CTkSwitch(self.top_center_frame, 
                                                 text="Audiobeacon",
                                                 progress_color="#3DBA50",
                                                 command=self.audiobeacon_on,
@@ -229,52 +158,227 @@ class InterfazApp:
                                                 font=("Helvetica", 30),
                                                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.8)
 
+    def pantalla_simulation(self):
+        # Limpiar la pantalla actual
+        self.set_up()
+        self.team_label.configure(text="Team #2075" + '\n'+"Simulation mode")
+
+        read_and_import_button = self.custom_button(self.top_right_frame, "Open simulation file", self.read_and_import)
+        read_and_import_button.place(relx=0.05,rely=0.7)
+
+        self.switch_var_simulation = StringVar(value="off")
+
+        self.start_simulation_switch  = CTkSwitch(self.top_center_frame, 
+                                                text="Simulation activate",
+                                                progress_color="#3DBA50",
+                                                command=self.simulation_on,
+                                                variable=self.switch_var_simulation, 
+                                                onvalue="on",
+                                                offvalue="off",
+                                                font=("Helvetica", 30),
+                                                text_color=self.color_texto_negro).place(relx=0.05,rely=0.5)
+        
+    def set_up(self):
+        # Limpiar la pantalla actual
+        self.clear_screen()
+
+        # Frames
+        self.left_frame = CTkFrame(self.root, fg_color=self.color_frame,corner_radius=0)
+        self.right = CTkFrame(self.root, fg_color=self.color_frame,corner_radius=0)
+        self.white_right = CTkFrame(self.right, fg_color="white",corner_radius=20)
+        self.top_center_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
+                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)
+        self.top_right_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
+                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)
+        self.bottom_frame = CTkFrame(self.root, fg_color=self.color_texto_blanco, 
+                                    border_color=self.color_bordes_frames,border_width=4,corner_radius=20)  
+        self.white_gps_frame = CTkFrame(self.bottom_frame, fg_color="white", corner_radius=20)  
+        self.white_graphics_frame = CTkFrame(self.bottom_frame, fg_color="white", corner_radius=20)  
+        self.white_data_frame = CTkFrame(self.bottom_frame, fg_color="white", corner_radius=20)  
+
+        # Colocacion de los frames
+        self.left_frame.place(relwidth=0.26,relheight=1)
+        self.right.place(relx=0.81,relwidth=0.19,relheight=1)
+        self.white_right.place(relx=0.05,rely=0.01,relwidth=0.9,relheight=0.98)
+        self.top_center_frame.place(relx=0.27, rely=0.01,relwidth=0.26,relheight=0.30)
+        self.top_right_frame.place(relx=0.54, rely=0.01,relwidth=0.26,relheight=0.30)
+        self.bottom_frame.place(relx=0.27, rely=0.32,relwidth=0.53,relheight=0.66)
+        self.white_gps_frame.place(relx=0.02, rely=0.02,relwidth=0.4,relheight=0.6)
+        self.white_graphics_frame.place(relx=0.44, rely=0.02,relwidth=0.54,relheight=0.95)
+        self.white_data_frame.place(relx=0.02, rely=0.64,relwidth=0.4,relheight=0.33)
+
+        # Imagen logo
+        self.team_logo_big      = CTkImage(dark_image=self.rounded_team, size=(200, 200))
+        CTkLabel(self.left_frame, image=self.team_logo_big, text="").pack(pady=10)
+
+        # Titulo y textos
+        self.team_label = CTkLabel(self.left_frame, text="" , font=("Helvetica", 30,"bold"),
+                 text_color=self.color_texto_blanco)
+        self.team_label.pack(pady=20)
+        CTkLabel(self.top_center_frame, text="Indicators", font=("Helvetica", 30,"bold"),
+                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
+        CTkLabel(self.top_right_frame , text="Commands"  , font=("Helvetica", 30,"bold"),
+                 text_color=self.color_texto_negro).place(relx=0.05,rely=0.05)
+        CTkLabel(self.white_gps_frame, text="GPS position", font=("Helvetica", 30,"bold"),
+                 text_color=self.color_texto_negro).place(relx=0.1,rely=0.03)
+
+        self.left_label         = CTkLabel(self.left_frame, 
+                                    text=
+                                        "UTC Time: \n"+
+                                        "Mission time: \n"+
+                                        "State: \n"+
+                                        "Sent packages: \n"+
+                                        "Recieved packages: ", 
+                                    justify=LEFT,
+                                    font=("Helvetica", 30),                                                   
+                                    text_color=self.color_texto_blanco)
+    
+        self.satelites_label    = CTkLabel(self.white_gps_frame, 
+                                    text=
+                                        "Satelites conected: \n"+
+                                        "GPS Time: "     ,
+                                    justify=LEFT,
+                                    font=("Helvetica", 26),
+                                    text_color=self.color_texto_negro)
+                                                   
+        self.white_top_label    = CTkLabel(self.white_graphics_frame, 
+                                    text=
+                                        "Speed:                 Temperature: \n\n\n\n\n"+
+                                        "Pressure:              Wind Speed:  \n\n\n\n\n"+
+                                        "Altitude:              Voltage: ", 
+                                    font=("Helvetica", 20),
+                                    text_color=self.color_texto_negro)
+        
+        self.white_bottom_label = CTkLabel(self.white_data_frame, 
+                                    text=
+                                        "Tilt:              Roll:", 
+                                    font=("Helvetica", 20),
+                                    text_color=self.color_texto_negro)
+        
+        self.left_label.pack(pady=10)
+        self.satelites_label.place(relx=0.1,rely=0.8)
+        self.white_top_label.pack(pady=100)
+        self.white_bottom_label.pack(pady=20)
+        
+        # Switches para la telemetria
+        self.switch_var_telemetry   = StringVar(value="off")
+        
+        self.start_telemetry_switch   = CTkSwitch(self.top_center_frame, 
+                                                text="Start telemetry",
+                                                progress_color="#3DBA50",
+                                                command=self.telemetry_on,
+                                                variable=self.switch_var_telemetry, 
+                                                onvalue="on",
+                                                offvalue="off",
+                                                font=("Helvetica", 30),
+                                                text_color=self.color_texto_negro).place(relx=0.05,rely=0.35)
+        
         # Command buttons
-        calibrate_altitude_button = self.custom_button(self.right_frame, "Calibrate Altitude", self.calibrate_altitude)
+        calibrate_altitude_button = self.custom_button(self.top_right_frame, "Calibrate Altitude", self.calibrate_altitude)
         calibrate_altitude_button.place(relx=0.05,rely=0.3)
 
-        set_time_button = self.custom_button(self.right_frame, "Set time", self.set_time)
+        set_time_button = self.custom_button(self.top_right_frame, "Set time", self.set_time)
         set_time_button.place(relx=0.05,rely=0.5)
-
-        save_and_export_button = self.custom_button(self.right_frame, "Save and export", self.save_and_export)
-        save_and_export_button.place(relx=0.05,rely=0.7)
 
         # Botón de regresar
         backbutton = self.custom_button(self.left_frame, "Return", self.pantalla_inicial)
         backbutton.place(relx=0.2,rely=0.9)
 
-        self.actualizar_contenido()
-
-
-        
+        #self.actualizar_contenido()    
 
     def telemetry_on(self):
         if self.switch_var_telemetry.get() == "on":
             mensaje = "CX,ON"
-            self.ser.write(mensaje.encode())
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
         elif self.switch_var_telemetry.get() == "off":
             mensaje = "CX,OFF"
-            self.ser.write(mensaje.encode())
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
 
     def heatshield_on(self):
-        pass
+        if self.switch_var_heatshield.get() == "on":
+            mensaje = "HS,ON"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
+        elif self.switch_var_heatshield.get() == "off":
+            mensaje = "HS,OFF"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
     
     def parachute_on(self):
-        pass
+        if self.switch_var_parachute.get() == "on":
+            mensaje = "PC,ON"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
+        elif self.switch_var_parachute.get() == "off":
+            mensaje = "PC,OFF"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
     
     def audiobeacon_on(self):
-        pass
+        if self.switch_var_audiobeacon.get() == "on":
+            mensaje = "BCN,ON"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
+        elif self.switch_var_audiobeacon.get() == "off":
+            mensaje = "BCN,OFF"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
+
+    def simulation_on(self):
+        if self.switch_var_simulation.get() == "on":
+            mensaje = "SIM,ON"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
+        elif self.switch_var_simulation.get() == "off":
+            mensaje = "SIM,OFF"
+            #self.ser.write(mensaje.encode())
+            print(mensaje)
 
     def calibrate_altitude(self):
         mensaje = "CAL"
-        self.ser.write(mensaje.encode())
+        #self.ser.write(mensaje.encode())
+        print(mensaje)
 
     def set_time(self):
         mensaje = "ST"
-        self.ser.write(mensaje.encode())
+        #self.ser.write(mensaje.encode())
+        print(mensaje)
 
     def save_and_export(self):
-        pass
+        save_csv_file = filedialog.asksaveasfilename(initialdir=r"GroundStation",
+                                                     initialfile="Flight_2075",
+                                                    title="Save flight as CSV file",
+                                                    filetypes=(("CSV Files", "*.csv"),))
+
+        if save_csv_file:
+            # Agregar extensión .csv si no está presente en la ruta
+            if not save_csv_file.endswith(".csv"):
+                save_csv_file += ".csv"
+            try:
+                self.df.to_csv(path_or_buf=save_csv_file, index=False)
+                print(f"Archivo CSV guardado en: {save_csv_file}")
+                # Puedes agregar más lógica aquí según sea necesario
+            except Exception as e:
+                print(f"Error al escribir el archivo CSV: {str(e)}")
+        else:
+            print("No se guardó ningún archivo.")
+
+    def read_and_import(self):
+        open_csv_file = filedialog.askopenfilename(initialdir=r"GroundStation",
+                                                title="Open CSV simulation file",
+                                                filetypes=(("CSV Files", "*.csv"),))
+        if open_csv_file:
+            try:
+                self.df = pd.read_csv(open_csv_file)
+                print(self.df)
+                # Puedes agregar más lógica aquí según sea necesario
+            except Exception as e:
+                print(f"Error al leer el archivo CSV: {str(e)}")
+        else:
+            print("No se seleccionó ningún archivo.")
+
     
     def actualizar_contenido(self):
         
@@ -347,21 +451,7 @@ class InterfazApp:
         self.root.after(1000, self.actualizar_contenido)
         
 
-    def pantalla_simulation(self):
-        # Limpiar la pantalla actual
-        self.clear_screen()
-
-        CTkLabel(self.root, text="Simulation Mode", font=("Helvetica", 16)).pack(pady=20)
-
-        
-
-
-        # Botón de regresar
-        backbutton = self.custom_button(self.root, "Return", self.pantalla_inicial)
-        backbutton.pack(pady=10)
-    
-    def clear_screen(self):
-        # Limpiar la pantalla
+    def clear_screen(self):        # Limpiar la pantalla
         for widget in self.root.winfo_children():
             widget.destroy()
 
@@ -369,7 +459,7 @@ class InterfazApp:
         # Configuracion de los botones
         return CTkButton(lugar, text=texto, command=comando,
         width=250, 
-        height=50, 
+        height=45, 
         corner_radius=30,
         fg_color=self.color_frame,
         font=("Helvetica", 20),
