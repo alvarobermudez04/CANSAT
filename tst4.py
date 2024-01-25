@@ -262,11 +262,11 @@ class InterfazApp:
                                     text_color=self.color_texto_negro)
         
         #seccion de creaacion de tabla de graficos de GPS
-        self.fig = plt.figure()
-        gs = GridSpec(1,1, figure=self.fig)
-        self.ax1 = self.fig.add_subplot(gs[0,0], projection='3d')
-        self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_gps_frame)
-        self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
+        self.fig1 = plt.figure()
+        gs1 = GridSpec(1,1, figure=self.fig1)
+        self.ax1 = self.fig1.add_subplot(gs1[0,0], projection='3d')
+        self.canva_graf_3D = FigureCanvasTkAgg(self.fig1, master=self.white_gps_frame)
+        self.canva_graf_3D.get_tk_widget().pack(expand=True, fill='both')
         #root.protocol("WM_DELETE_WINDOW", root.quit)
 
 
@@ -280,7 +280,7 @@ class InterfazApp:
                                     text_color=self.color_texto_negro)
         
         #seccion de creaacion de tabla de graficos de sensores
-        self.fig = plt.figure()
+        self.fig = plt.figure(tight_layout=True)
         gs = GridSpec(3,2, figure=self.fig)
         self.ax2 = self.fig.add_subplot(gs[0,0]) #Speed
         self.ax3 = self.fig.add_subplot(gs[0,1]) #Temperature
@@ -357,22 +357,25 @@ class InterfazApp:
         
     def actualizar_graficos(self):
         #to do: caso en que haya que deterner
+        #   Agregar unidades a cadaa valor de grafico
         while True:
             try: 
                 # Obtener el tiempo transcurrido en segundos
                 tiempo_transcurrido = time.time() - self.inicio_tiempo
 
                 # Llamar a los métodos individuales para cada gráfico
-                self.actualizar_grafico1(tiempo_transcurrido)
-                self.actualizar_grafico2(tiempo_transcurrido)
-                self.actualizar_grafico3(tiempo_transcurrido)
-                self.actualizar_grafico4(tiempo_transcurrido)
-                self.actualizar_grafico5(tiempo_transcurrido)
-                self.actualizar_grafico6(tiempo_transcurrido)
-                self.actualizar_grafico7(tiempo_transcurrido)
+                self.actualizar_grafico1(tiempo_transcurrido,"GPS")#GPS
+                self.actualizar_grafico2(tiempo_transcurrido,"Speed")#Speed
+                self.actualizar_grafico3(tiempo_transcurrido,"Temperature")#Temperature
+                self.actualizar_grafico4(tiempo_transcurrido,"Pressure")#Pressure
+                self.actualizar_grafico5(tiempo_transcurrido,"Wind Speed")#Wind Speed
+                self.actualizar_grafico6(tiempo_transcurrido,"Altitude")#Altitude
+                self.actualizar_grafico7(tiempo_transcurrido,"Voltage")#Voltage
 
                 # Actualizar la interfaz gráfica
                 self.canva_graf.draw()
+                # Actualizar la interfaz gráfica 3D
+                self.canva_graf_3D.draw()
 
                 # Esperar un segundo
                 time.sleep(1)
@@ -380,7 +383,7 @@ class InterfazApp:
                 print("Se detuvo la carga de los graficos")
                 break
             
-    def actualizar_grafico1(self, tiempo_transcurrido):
+    def actualizar_grafico1(self, tiempo_transcurrido,titulo):
         nuevo_z = random.random()
 
         # Agregar los nuevos datos a la lista correspondiente
@@ -394,32 +397,32 @@ class InterfazApp:
         self.ax1.clear()
         x_data, z_data = zip(*self.datos_grafico1)
         self.ax1.plot(x_data, z_data, marker='o')
-        self.ax1.set_title('Gráfico 1 (3D)')
+        self.ax1.set_title(titulo+'(3D)')
         self.ax1.set_xlabel('Tiempo transcurrido (segundos)')
         self.ax1.set_ylabel('Eje Z')
-        self.ax1.set_zlabel('Eje Y')
+        self.ax1.set_zlabel(titulo)
 
-    def actualizar_grafico2(self, tiempo_transcurrido):
-        self.actualizar_grafico(self.datos_grafico2, self.ax2, 2, tiempo_transcurrido, "Gráfico 2")
+    def actualizar_grafico2(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico2, self.ax2, 2, tiempo_transcurrido, titulo)
 
-    def actualizar_grafico3(self, tiempo_transcurrido):
-        self.actualizar_grafico(self.datos_grafico3, self.ax3, 3, tiempo_transcurrido, "Gráfico 3")
+    def actualizar_grafico3(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico3, self.ax3, 3, tiempo_transcurrido, titulo)
 
-    def actualizar_grafico4(self, tiempo_transcurrido):
-        self.actualizar_grafico(self.datos_grafico4, self.ax4, 4, tiempo_transcurrido, "Gráfico 4")
+    def actualizar_grafico4(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico4, self.ax4, 4, tiempo_transcurrido, titulo)
 
-    def actualizar_grafico5(self, tiempo_transcurrido):
-        self.actualizar_grafico(self.datos_grafico5, self.ax5, 5, tiempo_transcurrido, "Gráfico 5")
+    def actualizar_grafico5(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico5, self.ax5, 5, tiempo_transcurrido, titulo)
 
-    def actualizar_grafico6(self, tiempo_transcurrido):
-        self.actualizar_grafico(self.datos_grafico6, self.ax6, 6, tiempo_transcurrido, "Gráfico 6")
+    def actualizar_grafico6(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico6, self.ax6, 6, tiempo_transcurrido, titulo)
 
-    def actualizar_grafico7(self, tiempo_transcurrido):
-        self.actualizar_grafico(self.datos_grafico7, self.ax7, 7, tiempo_transcurrido, "Gráfico 7")
+    def actualizar_grafico7(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico7, self.ax7, 7, tiempo_transcurrido,titulo)
 
     def actualizar_grafico(self, datos_grafico, ax, indice, tiempo_transcurrido, titulo):#, valor, nombre_valor):
         valor = random.random()
-        nombre_valor="Eje Y"
+        nombre_valor=titulo
 
 
         # Agregar los nuevos datos a la lista correspondiente
@@ -565,6 +568,15 @@ class InterfazApp:
             #mode
             
             # ... (actualizar otras variables según sea necesario)
+            #self.datos_graficox.append()
+            #   GPS                 ax1
+            #       z,y,z
+            #   Speed               ax2
+            #   Temperature         ax3
+            #   Pressure            ax4
+            #   Wind Speed          ax5
+            #   Altitude            ax6
+            #   Voltage             ax7
 
             
 
