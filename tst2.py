@@ -1,36 +1,41 @@
-import serial
-import pandas as pd
+from customtkinter import *  # pip install customtkinter
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import matplotlib.pyplot as plt
 
-# Configura el objeto Serial
-try:
-    ser = serial.Serial('COM3', 9600)  # Asegúrate de ajustar la velocidad de baudios según tu configuración
-except serial.SerialException:
-    print("No se puede abrir el puerto COM3. Asegúrate de que el dispositivo esté conectado correctamente.")
-    exit()
 
-# Crea un DataFrame vacío
-columnas = ['TEAM_ID', 'MISSION_TIME', 'PACKET_COUNT', 'MODE', 'STATE', 'ALTITUDE',
-            'AIR_SPEED', 'HS_DEPLOYED', 'PC_DEPLOYED', 'TEMPERATURE', 'VOLTAGE',
-            'PRESSURE', 'GPS_TIME', 'GPS_ALTITUDE', 'GPS_LATITUDE', 'GPS_LONGITUDE',
-            'GPS_SATS', 'TILT_X', 'TILT_Y', 'ROT_Z', 'CMD_ECHO']
+def on_closing():
+    root.destroy()
+    plt.close()
 
-df = pd.DataFrame(columns=columnas)
 
-try:
-    while True:
-        # Lee la línea y la divide por comas para obtener una lista de variables
-        variables = ser.readline().decode('utf-8').strip().split(',')
+def main():
+    global root
+    root = CTk()
+    root.title("Image with Rounded Corners")
+    root.configure(bg="black")
 
-        # Añade la lista como una nueva fila al DataFrame
-        df = pd.concat([df, pd.Series(variables, index=columnas).to_frame().T], ignore_index=True)
+    # Create label
+    label = CTkLabel(root, text="Hello, CustomTkinter!", font=("Helvetica", 16))
+    label.pack()
 
-        # Imprime el DataFrame actualizado
-        print(df)
+    # Create Matplotlib figure
+    fig, ax = plt.subplots()
+    ax.plot([1, 2, 3, 4], [10, 20, 25, 30], marker='o')
+    ax.set_title('Matplotlib Plot')
+    ax.set_xlabel('X-axis')
+    ax.set_ylabel('Y-axis')
 
-except KeyboardInterrupt:
-    # Maneja la interrupción del teclado (Ctrl+C) para cerrar el puerto serial
-    ser.close()
-    print("Puerto serial cerrado.")
-except serial.SerialException:
-    print("Se perdió la conexión con el dispositivo en el puerto COM3.")
-    ser.close()
+    # Embed Matplotlib plot into Tkinter window
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.draw()
+    canvas.get_tk_widget().pack()
+
+    # Close Matplotlib plot properly on window close
+    root.protocol("WM_DELETE_WINDOW", on_closing)
+
+    root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
+

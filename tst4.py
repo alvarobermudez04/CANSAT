@@ -5,8 +5,8 @@ from datetime import datetime
 import serial                   #pip install pyserial
 import pandas as pd             #pip install pandas
 import matplotlib.pyplot as plt
-#from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-#from matplotlib.gridspec import GridSpec
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.gridspec import GridSpec
 
 class InterfazApp:
     def __init__(self, root):
@@ -253,11 +253,13 @@ class InterfazApp:
                                     font=("Helvetica", 26),
                                     text_color=self.color_texto_negro)
         
-        #self.fig = plt.figure()
-        #gs = GridSpec(1,1, figure=self.fig)
-        #self.ax = self.fig.add_subplot(gs[0,0], projection='3d')
-        #self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_gps_frame)
-        #self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
+        self.fig = plt.figure()
+        gs = GridSpec(1,1, figure=self.fig)
+        self.ax = self.fig.add_subplot(gs[0,0], projection='3d')
+        self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_gps_frame)
+        self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
+        root.protocol("WM_DELETE_WINDOW", root.quit)
+
 
                                                    
         self.white_top_label    = CTkLabel(self.white_graphics_frame, 
@@ -412,7 +414,6 @@ class InterfazApp:
         else:
             print("No se seleccionó ningún archivo.")
 
-    
     def actualizar_contenido(self):
         
         # Actualiza las variables con los datos del puerto serie
@@ -483,7 +484,6 @@ class InterfazApp:
         # Llamar a la función después de 1000 milisegundos (1 segundo)
         self.root.after(1000, self.actualizar_contenido)
         
-
     def clear_screen(self):        # Limpiar la pantalla
         for widget in self.root.winfo_children():
             widget.destroy()
