@@ -271,17 +271,17 @@ class InterfazApp:
                                     text_color=self.color_texto_negro)
         
         
-        #self.fig = plt.figure()
-        #gs = GridSpec(3,2, figure=self.fig)
-        #self.ax1 = self.fig.add_subplot(gs[0,0])
-        #self.ax2 = self.fig.add_subplot(gs[0,1])
-        #self.ax3 = self.fig.add_subplot(gs[1,0])
-        #self.ax4 = self.fig.add_subplot(gs[1,1])
-        #self.ax5 = self.fig.add_subplot(gs[2,0])
-        #self.ax5 = self.fig.add_subplot(gs[2,1])
+        self.fig = plt.figure()
+        gs = GridSpec(3,2, figure=self.fig)
+        self.ax1 = self.fig.add_subplot(gs[0,0])
+        self.ax2 = self.fig.add_subplot(gs[0,1])
+        self.ax3 = self.fig.add_subplot(gs[1,0])
+        self.ax4 = self.fig.add_subplot(gs[1,1])
+        self.ax5 = self.fig.add_subplot(gs[2,0])
+        self.ax5 = self.fig.add_subplot(gs[2,1])
 
-        #self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_graphics_frame)
-        #self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
+        self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_graphics_frame)
+        self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
 
         
         self.white_bottom_label = CTkLabel(self.white_data_frame, 
@@ -487,6 +487,7 @@ class InterfazApp:
     def clear_screen(self):        # Limpiar la pantalla
         for widget in self.root.winfo_children():
             widget.destroy()
+        root.protocol("WM_DELETE_WINDOW", root.quit)
 
     def custom_button(self, lugar, texto, comando):
         # Configuracion de los botones
