@@ -55,6 +55,8 @@ class InterfazApp:
         self.Tilt_y = "0"
         self.Roll = "0"
         self.Voltage = "0"
+
+
         #para cronometro de graficos
         self.inicio_tiempo = 0
 
@@ -74,6 +76,17 @@ class InterfazApp:
     def pantalla_inicial(self):
         # Limpiar la pantalla actual
         self.clear_screen()
+        #para cronometro de graficos
+        self.inicio_tiempo = 0
+
+        # Inicializar listas para almacenar datos de cada gráfico
+        self.datos_grafico1 = []
+        self.datos_grafico2 = []
+        self.datos_grafico3 = []
+        self.datos_grafico4 = []
+        self.datos_grafico5 = []
+        self.datos_grafico6 = []
+        self.datos_grafico7 = []
         
         # Lista de colores
         self.color_fondo            = "#FAFAFA"
@@ -199,6 +212,18 @@ class InterfazApp:
     def set_up(self):
         # Limpiar la pantalla actual
         self.clear_screen()
+        #para cronometro de graficos
+        self.inicio_tiempo = 0
+
+        # Inicializar listas para almacenar datos de cada gráfico
+        self.datos_grafico1 = []
+        self.datos_grafico2 = []
+        self.datos_grafico3 = []
+        self.datos_grafico4 = []
+        self.datos_grafico5 = []
+        self.datos_grafico6 = []
+        self.datos_grafico7 = []
+
         # Inicializar el tiempo de inicio cronometro para graficos
         self.inicio_tiempo = time.time()
 
