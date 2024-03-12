@@ -1,38 +1,29 @@
 #include <Wire.h>
-#include <SPI.h>
 #include <Adafruit_Sensor.h>
 #include "Adafruit_BMP3XX.h"
 
-#define BMP_SCK 13
-#define BMP_MISO 12
-#define BMP_MOSI 11
-#define BMP_CS 10
-
 #define SEALEVELPRESSURE_HPA (1013.25)
 
-Adafruit_BMP3XX bmp;
+#define STANDBY 0
+#define ASCENDING 1
+#define FIRST_DESCEND 2
+#define SECOND_DESCEND 3
+#define THIRD_DESCEND 4
+#define LANDED 5
 
-// Estados del cohete
-enum RocketState {
-  STANDBY,
-  ASCENDING,
-  FIRST_DESCEND,
-  SECOND_DESCEND,
-  THIRD_DESCEND,
-  LANDED
-};
+int state = STANDBY;
+float previousAltitude = 0;
+float currentAltitude = 0;
 
-// Variables
-RocketState currentState = STANDBY;
-float previousAltitude = 0.0;
+#define SIMULATION_MODE false // Cambiar a true para usar modo de simulación
 
 void setup() {
   Serial.begin(9600);
   while (!Serial);
-  Serial.println("Rocket Flight Computer Initialized");
 
+  // Inicialización del sensor BMP380
   if (!bmp.begin_I2C()) {
-    Serial.println("Could not find a valid BMP3 sensor, check wiring!");
+    Serial.println("No se pudo encontrar el sensor BMP3, revisa la conexión!");
     while (1);
   }
 
@@ -43,71 +34,91 @@ void setup() {
 }
 
 void loop() {
-  if (!bmp.performReading()) {
-    Serial.println("Failed to perform reading :(");
-    return;
+  if (SIMULATION_MODE) {
+    // Leer valores simulados desde el puerto serial
+    if (Serial.available() > 0) {
+      currentAltitude = Serial.parseFloat();
+      // Descartar el carácter de nueva línea
+      Serial.read();
+    }
+  } else {
+    // Leer altitud desde el sensor BMP380
+    if (!bmp.performReading()) {
+      Serial.println("Error al leer el sensor BMP380 :(");
+      return;
+    }
+    currentAltitude = bmp.readAltitude(SEALEVELPRESSURE_HPA);
   }
-  
-  float currentAltitude = bmp.readAltitude(SEALEVELPRESSURE_HPA);
 
-  // Manejo de estados
-  switch (currentState) {
+  // Determinar el estado actual basado en la altitud
+  switch (state) {
     case STANDBY:
-      if (currentAltitude > 0) {
-        currentState = ASCENDING;
-        Serial.println("Rocket has launched! Ascending...");
+      if (currentAltitude == 0) {
+        state = ASCENDING;
       }
       break;
-      
+
     case ASCENDING:
       if (currentAltitude > previousAltitude) {
-        // Continuar ascendiendo
-        Serial.println("Ascending...");
+        state = ASCENDING;
       } else {
-        currentState = FIRST_DESCEND;
-        Serial.println("Apogee reached! Initiating first descend...");
+        state = FIRST_DESCEND;
       }
       break;
-      
+
     case FIRST_DESCEND:
       if (currentAltitude < previousAltitude && currentAltitude > 100) {
-        // Descender y activar heatshield
-        Serial.println("First descend... Activating heatshield...");
-      } else {
-        currentState = SECOND_DESCEND;
-        Serial.println("Heatshield activated! Initiating second descend...");
+        // Activar comando heatshield
+        state = SECOND_DESCEND;
       }
       break;
-      
+
     case SECOND_DESCEND:
       if (currentAltitude < previousAltitude && currentAltitude <= 100) {
-        // Descender y activar parachute
-        Serial.println("Second descend... Activating parachute...");
-      } else {
-        currentState = THIRD_DESCEND;
-        Serial.println("Parachute activated! Initiating third descend...");
+        // Activar comando parachute
+        state = THIRD_DESCEND;
       }
       break;
-      
+
     case THIRD_DESCEND:
-      if (currentAltitude < previousAltitude) {
-        // Continuar descendiendo
-        Serial.println("Third descend...");
-      } else {
-        currentState = LANDED;
-        Serial.println("Rocket has landed! Activating beacon...");
+      if (currentAltitude < previousAltitude && state == SECOND_DESCEND) {
+        // Tercera caída
+        state = LANDED;
       }
       break;
-      
+
     case LANDED:
       if (currentAltitude == 0) {
-        Serial.println("Beacon activated. Mission complete!");
+        // Activar comando beacon
+        // Fin del vuelo
       }
       break;
   }
 
-  // Actualizar la altitud anterior
+  // Actualizar altitud anterior con la actual para la próxima iteración
   previousAltitude = currentAltitude;
 
-  delay(1000); // Realizar lectura cada segundo
+  // Imprimir estado actual
+  switch (state) {
+    case STANDBY:
+      Serial.println("Stand By");
+      break;
+    case ASCENDING:
+      Serial.println("Ascending");
+      break;
+    case FIRST_DESCEND:
+      Serial.println("First Descend");
+      break;
+    case SECOND_DESCEND:
+      Serial.println("Second Descend");
+      break;
+    case THIRD_DESCEND:
+      Serial.println("Third Descend");
+      break;
+    case LANDED:
+      Serial.println("Landed");
+      break;
+  }
+
+  delay(1000); // Esperar 1 segundo antes de la próxima iteración
 }
