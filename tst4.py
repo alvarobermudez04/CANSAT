@@ -7,6 +7,9 @@ import pandas as pd             #pip install pandas
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.gridspec import GridSpec
+import threading
+import time
+import random
 
 class InterfazApp:
     def __init__(self, root):
@@ -53,6 +56,10 @@ class InterfazApp:
         self.Roll = "0"
         self.Voltage = "0"
 
+
+        #para cronometro de graficos
+        self.inicio_tiempo = 0
+
         # Inicializar listas para almacenar datos de cada gráfico
         self.datos_grafico1 = []
         self.datos_grafico2 = []
@@ -62,12 +69,24 @@ class InterfazApp:
         self.datos_grafico6 = []
         self.datos_grafico7 = []
 
+
         # Pantalla Inicial
         self.pantalla_inicial()
         
     def pantalla_inicial(self):
         # Limpiar la pantalla actual
         self.clear_screen()
+        #para cronometro de graficos
+        self.inicio_tiempo = 0
+
+        # Inicializar listas para almacenar datos de cada gráfico
+        self.datos_grafico1 = []
+        self.datos_grafico2 = []
+        self.datos_grafico3 = []
+        self.datos_grafico4 = []
+        self.datos_grafico5 = []
+        self.datos_grafico6 = []
+        self.datos_grafico7 = []
         
         # Lista de colores
         self.color_fondo            = "#FAFAFA"
@@ -193,6 +212,20 @@ class InterfazApp:
     def set_up(self):
         # Limpiar la pantalla actual
         self.clear_screen()
+        #para cronometro de graficos
+        self.inicio_tiempo = 0
+
+        # Inicializar listas para almacenar datos de cada gráfico
+        self.datos_grafico1 = []
+        self.datos_grafico2 = []
+        self.datos_grafico3 = []
+        self.datos_grafico4 = []
+        self.datos_grafico5 = []
+        self.datos_grafico6 = []
+        self.datos_grafico7 = []
+
+        # Inicializar el tiempo de inicio cronometro para graficos
+        self.inicio_tiempo = time.time()
 
         # Frames
         self.left_frame = CTkFrame(self.root, fg_color=self.color_frame,corner_radius=0)
@@ -253,12 +286,13 @@ class InterfazApp:
                                     font=("Helvetica", 26),
                                     text_color=self.color_texto_negro)
         
-        self.fig = plt.figure()
-        gs = GridSpec(1,1, figure=self.fig)
-        self.ax = self.fig.add_subplot(gs[0,0], projection='3d')
-        self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_gps_frame)
-        self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
-        root.protocol("WM_DELETE_WINDOW", root.quit)
+        #seccion de creaacion de tabla de graficos de GPS
+        self.fig1 = plt.figure()
+        gs1 = GridSpec(1,1, figure=self.fig1)
+        self.ax1 = self.fig1.add_subplot(gs1[0,0], projection='3d')
+        self.canva_graf_3D = FigureCanvasTkAgg(self.fig1, master=self.white_gps_frame)
+        self.canva_graf_3D.get_tk_widget().pack(expand=True, fill='both')
+        #root.protocol("WM_DELETE_WINDOW", root.quit)
 
 
                                                    
@@ -270,18 +304,18 @@ class InterfazApp:
                                     font=("Helvetica", 20),
                                     text_color=self.color_texto_negro)
         
-        
-        #self.fig = plt.figure()
-        #gs = GridSpec(3,2, figure=self.fig)
-        #self.ax1 = self.fig.add_subplot(gs[0,0])
-        #self.ax2 = self.fig.add_subplot(gs[0,1])
-        #self.ax3 = self.fig.add_subplot(gs[1,0])
-        #self.ax4 = self.fig.add_subplot(gs[1,1])
-        #self.ax5 = self.fig.add_subplot(gs[2,0])
-        #self.ax5 = self.fig.add_subplot(gs[2,1])
+        #seccion de creaacion de tabla de graficos de sensores
+        self.fig = plt.figure(tight_layout=True)
+        gs = GridSpec(3,2, figure=self.fig)
+        self.ax2 = self.fig.add_subplot(gs[0,0]) #Speed
+        self.ax3 = self.fig.add_subplot(gs[0,1]) #Temperature
+        self.ax4 = self.fig.add_subplot(gs[1,0]) #Pressure
+        self.ax5 = self.fig.add_subplot(gs[1,1]) #Wind Speed
+        self.ax6 = self.fig.add_subplot(gs[2,0]) #Altitude
+        self.ax7 = self.fig.add_subplot(gs[2,1]) #Voltage
 
-        #self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_graphics_frame)
-        #self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
+        self.canva_graf = FigureCanvasTkAgg(self.fig, master=self.white_graphics_frame)
+        self.canva_graf.get_tk_widget().pack(expand=True, fill='both')
 
         
         self.white_bottom_label = CTkLabel(self.white_data_frame, 
@@ -319,7 +353,117 @@ class InterfazApp:
         backbutton = self.custom_button(self.left_frame, "Return", self.pantalla_inicial)
         backbutton.place(relx=0.2,rely=0.9)
 
+        self.configuracion_graficos()
+
         #self.actualizar_contenido()    
+
+    def configuracion_graficos(self):
+        # Iniciar hilo para actualizar los gráficos cada segundo
+        self.thread_graficos = threading.Thread(target=self.actualizar_graficos)
+        self.thread_graficos.daemon = True
+        self.thread_graficos.start()
+
+        # Iniciar hilo para actualizar el cronómetro cada segundo
+        #self.label_cronometro = tk.Label(root, text="Tiempo transcurrido: 00:00:00", font=("Helvetica", 16))
+        #self.label_cronometro.pack()
+        self.thread_cronometro = threading.Thread(target=self.actualizar_cronometro)
+        self.thread_cronometro.daemon = True
+        self.thread_cronometro.start()
+
+    def actualizar_cronometro(self):
+        while True:
+            tiempo_transcurrido = int(time.time() - self.inicio_tiempo)
+            horas, segundos = divmod(tiempo_transcurrido, 3600)
+            minutos, segundos = divmod(segundos, 60)
+            tiempo_formateado = "{:02}:{:02}:{:02}".format(horas, minutos, segundos)
+            #self.label_cronometro.config(text=f"Tiempo transcurrido: {tiempo_formateado}")
+            time.sleep(1)
+            #self.root.after(0,lambda:self.root.state('zoomed'))
+        
+    def actualizar_graficos(self):
+        #to do: caso en que haya que deterner
+        #   Agregar unidades a cadaa valor de grafico
+        while True:
+            try: 
+                # Obtener el tiempo transcurrido en segundos
+                tiempo_transcurrido = time.time() - self.inicio_tiempo
+
+                # Llamar a los métodos individuales para cada gráfico
+                self.actualizar_grafico1(tiempo_transcurrido,"GPS")#GPS
+                self.actualizar_grafico2(tiempo_transcurrido,"Speed")#Speed
+                self.actualizar_grafico3(tiempo_transcurrido,"Temperature")#Temperature
+                self.actualizar_grafico4(tiempo_transcurrido,"Pressure")#Pressure
+                self.actualizar_grafico5(tiempo_transcurrido,"Wind Speed")#Wind Speed
+                self.actualizar_grafico6(tiempo_transcurrido,"Altitude")#Altitude
+                self.actualizar_grafico7(tiempo_transcurrido,"Voltage")#Voltage
+
+                # Actualizar la interfaz gráfica
+                self.canva_graf.draw()
+                # Actualizar la interfaz gráfica 3D
+                self.canva_graf_3D.draw()
+
+                # Esperar un segundo
+                time.sleep(1)
+            except:
+                print("Se detuvo la carga de los graficos")
+                break
+            
+    def actualizar_grafico1(self, tiempo_transcurrido,titulo):
+        nuevo_z = random.random()
+
+        # Agregar los nuevos datos a la lista correspondiente
+        self.datos_grafico1.append((tiempo_transcurrido, nuevo_z))
+
+        # Limitar la cantidad de puntos mostrados a, por ejemplo, 10
+        if len(self.datos_grafico1) > 10:
+            self.datos_grafico1 = self.datos_grafico1[-10:]
+
+        # Limpiar y trazar el gráfico con los nuevos datos
+        self.ax1.clear()
+        x_data, z_data = zip(*self.datos_grafico1)
+        self.ax1.plot(x_data, z_data, marker='o')
+        self.ax1.set_title(titulo+'(3D)')
+        self.ax1.set_xlabel('Tiempo transcurrido (segundos)')
+        self.ax1.set_ylabel('Eje Z')
+        self.ax1.set_zlabel(titulo)
+
+    def actualizar_grafico2(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico2, self.ax2, 2, tiempo_transcurrido, titulo)
+
+    def actualizar_grafico3(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico3, self.ax3, 3, tiempo_transcurrido, titulo)
+
+    def actualizar_grafico4(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico4, self.ax4, 4, tiempo_transcurrido, titulo)
+
+    def actualizar_grafico5(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico5, self.ax5, 5, tiempo_transcurrido, titulo)
+
+    def actualizar_grafico6(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico6, self.ax6, 6, tiempo_transcurrido, titulo)
+
+    def actualizar_grafico7(self, tiempo_transcurrido,titulo):
+        self.actualizar_grafico(self.datos_grafico7, self.ax7, 7, tiempo_transcurrido,titulo)
+
+    def actualizar_grafico(self, datos_grafico, ax, indice, tiempo_transcurrido, titulo):#, valor, nombre_valor):
+        valor = random.random()
+        nombre_valor=titulo
+
+
+        # Agregar los nuevos datos a la lista correspondiente
+        datos_grafico.append((tiempo_transcurrido, valor))
+
+        # Limitar la cantidad de puntos mostrados a, por ejemplo, 10
+        if len(datos_grafico) > 10:
+            datos_grafico = datos_grafico[-10:]
+
+        # Limpiar y trazar el gráfico con los nuevos datos
+        ax.clear()
+        x_data, y_data = zip(*datos_grafico)
+        ax.plot(x_data, y_data, marker='o')
+        ax.set_title(titulo)
+        ax.set_xlabel('Tiempo transcurrido (segundos)')
+        ax.set_ylabel(nombre_valor)
 
     def telemetry_on(self):
         if self.switch_var_telemetry.get() == "on":
@@ -449,6 +593,15 @@ class InterfazApp:
             #mode
             
             # ... (actualizar otras variables según sea necesario)
+            #self.datos_graficox.append()
+            #   GPS                 ax1
+            #       z,y,z
+            #   Speed               ax2
+            #   Temperature         ax3
+            #   Pressure            ax4
+            #   Wind Speed          ax5
+            #   Altitude            ax6
+            #   Voltage             ax7
 
             
 
@@ -487,6 +640,7 @@ class InterfazApp:
     def clear_screen(self):        # Limpiar la pantalla
         for widget in self.root.winfo_children():
             widget.destroy()
+        root.protocol("WM_DELETE_WINDOW", root.quit)
 
     def custom_button(self, lugar, texto, comando):
         # Configuracion de los botones
