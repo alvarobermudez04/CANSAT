@@ -25,8 +25,7 @@ void setup() {
 // metodo loop
 void loop() {
   float newAltitude = bmp.readAltitude();
-  checkAltitudeChange(newAltitude);
-  checkMaxAltitude(newAltitude);
+  identifyState(newAltitude);
   currentAltitude = newAltitude;
   delay(1000);
 }
@@ -116,6 +115,8 @@ void descending(float newAltitude){
   if (newAltitude >= 100 ){
     //esta en el primer descenso
     collectingDataProtocol();
+    //esperaar luego del apoger hasta 5m
+
   
   } else {
     //to do: identificar la diferencia desde el arduino entre el segundo y tercer descenso
@@ -124,11 +125,16 @@ void descending(float newAltitude){
     numOfDescending=2;
     actualState="Second Descending";
     collectingDataProtocol();
+    //active HS, primer paracaidas, abrir paracaidas
+    //activar HS
 
     // tercer descenso
     // numOfDescending=3;
     // actualState="Thrird Descending";
     // to do
+    //es justo en 100
+    //activar PC
+
 
     //verificar si ya aterrizó
     if (newAltitude == 0 && launched == true){
@@ -150,7 +156,7 @@ void collectingDataProtocol(){
 }
 
 //to do : metodo
-void activateRecoveryProtocol(){
+void activateRecoveryProtocol(){¿
  // stop collecting data and tranfer
  //  save data
  // activate recovery protocol
